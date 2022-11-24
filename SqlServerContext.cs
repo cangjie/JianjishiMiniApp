@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
-namespace OA
+using MiniApp.Models;
+namespace MiniApp
 {
 	public class SqlServerContext: DbContext
 	{
@@ -10,8 +11,11 @@ namespace OA
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
+            modelBuilder.Entity<MiniSession>().HasKey(c => new { c.original_id, c.session_key });
         }
+
+        public DbSet<MiniUser> miniUser { get; set; }
+        public DbSet<MiniSession> miniSession { get; set; }
     }
 }
 

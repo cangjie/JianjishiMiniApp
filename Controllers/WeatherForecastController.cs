@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-namespace OA.Controllers;
+namespace MiniApp.Controllers;
 
 [ApiController]
 [Route("[controller]")]

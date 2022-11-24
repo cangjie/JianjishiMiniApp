@@ -1,4 +1,4 @@
-﻿namespace OA;
+﻿namespace MiniApp;
 
 public class WeatherForecast
 {
