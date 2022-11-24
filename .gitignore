@@ -9,4 +9,5 @@ config.sqlServer
 createdump
 MiniApp.deps.json
 MiniApp.pdb
+MiniApp
 MiniApp.runtimeconfig.json
