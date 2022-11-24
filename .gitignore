@@ -4,3 +4,9 @@ obj/
 appsettings.*.json
 appsettings.json
 config.sqlServer
+*.dll
+*.so
+createdump
+MiniApp.deps.json
+MiniApp.pdb
+MiniApp.runtimeconfig.json
