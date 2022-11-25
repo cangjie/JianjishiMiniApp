@@ -10,7 +10,7 @@ using MiniApp.Models;
 
 namespace MiniApp.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class ShopController : ControllerBase
     {
