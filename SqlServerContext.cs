@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore;
 using MiniApp.Models;
 namespace MiniApp
@@ -16,6 +16,7 @@ namespace MiniApp
 
         public DbSet<MiniUser> miniUser { get; set; }
         public DbSet<MiniSession> miniSession { get; set; }
+        public DbSet<MiniApp.Models.Shop>? Shop { get; set; }
     }
 }
 
