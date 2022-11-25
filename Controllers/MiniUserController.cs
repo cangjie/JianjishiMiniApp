@@ -79,7 +79,7 @@ namespace MiniApp.Controllers
         }
 
         [HttpPost]
-        public string UpdateCellNumber(object postData)
+        public async Task<ActionResult<string>> UpdateCellNumber(object postData)
         {
             JObject resultObj = (Newtonsoft.Json.Linq.JObject)JsonConvert.DeserializeObject(postData.ToString());
             JToken result;
@@ -117,7 +117,7 @@ namespace MiniApp.Controllers
             {
                 user = new MiniUser();
                 user.original_id = _originalId;
-                MiniSession miniSession = _context.miniSession.Find(_originalId, sessionKey);
+                MiniSession miniSession = await _context.miniSession.FindAsync(_originalId, sessionKey);
                 if (miniSession == null)
                 {
                     throw new Exception("Session key is not valid.");
@@ -133,15 +133,15 @@ namespace MiniApp.Controllers
                 user.language = "";
                 user.id = 0;
                 user.cell_number = cellNumber.Trim();
-                _context.miniUser.Add(user);
+                await _context.miniUser.AddAsync(user);
             }
             else
             {
                 user.cell_number = cellNumber.Trim();
                 _context.Entry(user).State = EntityState.Modified;
             }
-            _context.SaveChanges();
-            return "";
+            await _context.SaveChangesAsync();
+            return cellNumber;
         }
 
         //public async Task<ActionResult<SchoolLesson>> PostSchoolLesson(SchoolLesson schoolLesson, string sessionKey)

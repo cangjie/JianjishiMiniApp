@@ -109,7 +109,7 @@ namespace MiniApp.Controllers
                 Console.WriteLine(err.ToString());
             }
 
-            List<MiniUser> userList = await _context.miniUser.Where<MiniUser>(u => u.original_id == originalId.Trim() && u.open_id == openId.Trim()).ToListAsync()
+            List<MiniUser> userList = await _context.miniUser.Where<MiniUser>(u => u.original_id == originalId.Trim() && u.open_id == openId.Trim()).ToListAsync();
 
             if (userList.Count == 0)
             {
