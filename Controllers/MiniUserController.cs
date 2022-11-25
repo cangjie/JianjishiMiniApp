@@ -49,10 +49,10 @@ namespace MiniApp.Controllers
 
 
         [HttpGet("{sessionKey}")]
-        public ActionResult<MiniUser> GetBySessionKey(string sessionKey)
+        public async Task<ActionResult<MiniUser>> GetBySessionKey(string sessionKey)
         {
             sessionKey = Util.UrlDecode(sessionKey);
-            MiniSession mSession = _context.miniSession.Find(_originalId, sessionKey);
+            MiniSession mSession = await _context.miniSession.FindAsync(_originalId, sessionKey);
             if (mSession == null)
             {
                 return NotFound();
@@ -65,7 +65,7 @@ namespace MiniApp.Controllers
                 return NotFound();
             }
 
-            List<MiniUser> userList = _context.miniUser.Where(u => u.open_id == openId && u.original_id == _originalId).ToList<MiniUser>();
+            List<MiniUser> userList = await  _context.miniUser.Where(u => u.open_id == openId && u.original_id == _originalId).ToListAsync<MiniUser>();
 
             if (userList.Count == 0)
             {
@@ -79,7 +79,7 @@ namespace MiniApp.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<string>> UpdateCellNumber(object postData)
+        public async Task<ActionResult<MiniUser>> UpdateCellNumber(object postData)
         {
             JObject resultObj = (Newtonsoft.Json.Linq.JObject)JsonConvert.DeserializeObject(postData.ToString());
             JToken result;
@@ -112,7 +112,7 @@ namespace MiniApp.Controllers
             }
 
 
-            MiniUser user = GetBySessionKey(sessionKey).Value;
+            MiniUser user = (await GetBySessionKey(sessionKey)).Value;
             if (user == null)
             {
                 user = new MiniUser();
@@ -141,7 +141,8 @@ namespace MiniApp.Controllers
                 _context.Entry(user).State = EntityState.Modified;
             }
             await _context.SaveChangesAsync();
-            return cellNumber;
+            user.open_id = "";
+            return user;
         }
 
         //public async Task<ActionResult<SchoolLesson>> PostSchoolLesson(SchoolLesson schoolLesson, string sessionKey)
@@ -193,15 +194,15 @@ namespace MiniApp.Controllers
 
         // PUT: api/MiniUser/5
         [HttpPut("{sessionKey}")]
-        public ActionResult<MiniUser> PutMiniUser(MiniUser user, string sessionKey)
+        public async Task<ActionResult<MiniUser>> PutMiniUser(MiniUser user, string sessionKey)
         {
             
 
 
             bool isStaff = false;
 
-           
-            MiniUser operUser = GetBySessionKey(sessionKey).Value;
+
+            MiniUser operUser = (await GetBySessionKey(sessionKey)).Value;
 
             
         
