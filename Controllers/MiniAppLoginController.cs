@@ -10,6 +10,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using Newtonsoft.Json;
 using MiniApp.Models;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -19,30 +20,41 @@ namespace MiniApp.Controllers
     public class MiniAppLoginController : Controller
     {
 
-        private IConfiguration config;
+        private IConfiguration _config;
 
         private readonly SqlServerContext _context;
 
-        //public string _originalId = "";
+        public string _originalId = "";
+
+        public string _appId = "";
+
+        public string _appSecret = "";
+
+        public string _token = "";
 
         public MiniAppLoginController(SqlServerContext context, IConfiguration config)
         {
-            this.config = config.GetSection("Settings");
+            //this.config = config.GetSection("Settings");
             _context = context;
-            //_originalId = config.GetSection("OriginalId").Value.Trim();
+            _config = config;
+            _originalId = config.GetSection("Settings").GetSection("OriginalId").Value.Trim();
+            _appId = config.GetSection("Settings").GetSection("AppId").Value.Trim();
+            _appSecret = config.GetSection("Settings").GetSection("AppSecret").Value.Trim();
+            _token = config.GetSection("Settings").GetSection("Token").Value.Trim();
+
         }
 
-       
 
- 
+
+
         // GET api/values/5
         [HttpGet]
-        public string GetSessionKey(string code)
+        public async Task<ActionResult<string>> GetSessionKey(string code)
         {
             code = Util.UrlDecode(code.Trim());
-            string appId = config.GetSection("AppId").Value.Trim();
-            string appSecret = config.GetSection("AppSecret").Value.Trim();
-            string originalId = config.GetSection("OriginalId").Value.Trim();
+            string appId = _appId;
+            string appSecret = _appSecret;
+            string originalId = _originalId;
 
             string sessionKeyJson = Util.GetWebContent("https://api.weixin.qq.com/sns/jscode2session?appid="
                 + appId.Trim() + "&secret=" + appSecret.Trim() + "&js_code=" + code.Trim() + "&grant_type=authorization_code");
@@ -87,8 +99,8 @@ namespace MiniApp.Controllers
             miniSession.union_id = unionId.Trim();
             try
             {
-                _context.miniSession.Add(miniSession);
-                _context.SaveChanges();
+                await _context.miniSession.AddAsync(miniSession);
+                await _context.SaveChangesAsync();
                
                 
             }
@@ -97,7 +109,7 @@ namespace MiniApp.Controllers
                 Console.WriteLine(err.ToString());
             }
 
-            List<MiniUser> userList = _context.miniUser.Where<MiniUser>(u => u.original_id == originalId.Trim() && u.open_id == openId.Trim()).ToList<MiniUser>();
+            List<MiniUser> userList = await _context.miniUser.Where<MiniUser>(u => u.original_id == originalId.Trim() && u.open_id == openId.Trim()).ToListAsync()
 
             if (userList.Count == 0)
             {
@@ -105,8 +117,8 @@ namespace MiniApp.Controllers
                 user.original_id = originalId.Trim();
                 user.open_id = openId.Trim();
                 user.union_id = unionId.Trim();
-                _context.miniUser.Add(user);
-                _context.SaveChanges();
+                await _context.miniUser.AddAsync(user);
+                await _context.SaveChangesAsync();
             }
 
 
