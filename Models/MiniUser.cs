@@ -30,6 +30,7 @@ namespace MiniApp.Models
         public string? province { get; set; }
         public string? country { get; set; }
         public string? language { get; set; }
+        public string real_name { get; set; } = "";
         public int staff { get; set; } = 0;
     }
 }
