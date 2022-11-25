@@ -87,27 +87,32 @@ namespace MiniApp.Controllers
                 sessionKey = result.ToString();
             }
 
-            if (_context.miniSession.Find(originalId, openId) != null)
-            {
-                return sessionKey.Trim();
-            }
+           
 
-            MiniSession miniSession = new MiniSession();
-            miniSession.open_id = openId.Trim();
-            miniSession.original_id = originalId.Trim();
-            miniSession.session_key = sessionKey.Trim();
-            miniSession.union_id = unionId.Trim();
-            try
+            //MiniSession miniSession = new MiniSession();
+            MiniSession miniSession = await _context.miniSession.FindAsync(originalId.Trim(), sessionKey.Trim());
+            if (miniSession == null)
             {
-                await _context.miniSession.AddAsync(miniSession);
-                await _context.SaveChangesAsync();
-               
-                
+                miniSession = new MiniSession()
+                {
+                    open_id = openId.Trim(),
+                    original_id = originalId.Trim(),
+                    session_key = sessionKey.Trim(),
+                    union_id = unionId.Trim()
+                };
+                try
+                {
+                    await _context.miniSession.AddAsync(miniSession);
+                    await _context.SaveChangesAsync();
+
+
+                }
+                catch (Exception err)
+                {
+                    Console.WriteLine(err.ToString());
+                }
             }
-            catch(Exception err)
-            {
-                Console.WriteLine(err.ToString());
-            }
+            
 
             List<MiniUser> userList = await _context.miniUser.Where<MiniUser>(u => u.original_id == originalId.Trim() && u.open_id == openId.Trim()).ToListAsync();
 
@@ -122,7 +127,7 @@ namespace MiniApp.Controllers
             }
 
 
-            return sessionKey.Trim();
+            return miniSession.session_key.Trim();
         }
 
         // POST api/values
