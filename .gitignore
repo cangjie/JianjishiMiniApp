@@ -10,4 +10,5 @@ createdump
 MiniApp.deps.json
 MiniApp.pdb
 MiniApp
+republish.sh
 MiniApp.runtimeconfig.json
