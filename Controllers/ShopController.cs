@@ -15,24 +15,72 @@ namespace MiniApp.Controllers
     public class ShopController : ControllerBase
     {
         private readonly SqlServerContext _context;
+        private readonly IConfiguration _config;
 
-        public ShopController(SqlServerContext context)
+        public ShopController(SqlServerContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;
         }
 
         // GET: api/Shop
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Shop>>> GetShop()
         {
-          if (_context.Shop == null)
-          {
-              return NotFound();
-          }
-            return await _context.Shop.OrderBy( s =>  s.sort)
-                .OrderBy( s => s.id).ToListAsync();
+            if (_context.Shop == null)
+            {
+                return NotFound();
+            }
+            return await _context.Shop.OrderBy(s => s.sort)
+                .OrderBy(s => s.id).ToListAsync();
         }
 
+        [HttpGet("{shopId}")]
+        public async Task<ActionResult<IEnumerable<TimeTable>>> GetTimeTable(int shopId, DateTime date)
+        {
+            List<TimeTable> timeList = await _context.timeTable.Where(t => (t.shop_id == shopId))
+                .OrderBy(t => t.id).ToListAsync();
+            for (int i = 0; i < timeList.Count; i++)
+            {
+                TimeTable t = timeList[i];
+                List<Reserve> rList = await _context.reserve.Where(r => (r.time_table_id == t.id))
+                    .ToListAsync();
+                t.avaliableCount = t.count - rList.Count;
+            }
+            return timeList;
+        }
+
+        [HttpGet("{shopId}")]
+        public async Task<ActionResult<Reserve>> Reserve(int shopId, int timeTableId, DateTime date, string sessionKey)
+        {
+            sessionKey = Util.UrlDecode(sessionKey).Trim();
+            MiniUserController userHelper = new MiniUserController(_context, _config);
+            MiniUser user = (await userHelper.GetBySessionKey(sessionKey)).Value;
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            List<Reserve> rList = await _context.reserve
+                .Where(r => (r.open_id.Trim().Equals(user.open_id.Trim()) && r.reserve_date.Date == date.Date))
+                .ToListAsync();
+            if (rList.Count > 0)
+            {
+                return BadRequest();
+            }
+            TimeTable t = await _context.timeTable.FindAsync(timeTableId);
+            Reserve r = new Reserve()
+            {
+                open_id = user.open_id.Trim(),
+                time_table_id = t.id,
+                time_table_description = t.description.Trim(),
+                reserve_date = date
+
+            };
+            await _context.reserve.AddAsync(r);
+            await _context.SaveChangesAsync();
+            return r;
+        }
+            
         /*
 
         // GET: api/Shop/5

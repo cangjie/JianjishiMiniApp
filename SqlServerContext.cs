@@ -17,6 +17,8 @@ namespace MiniApp
         public DbSet<MiniUser> miniUser { get; set; }
         public DbSet<MiniSession> miniSession { get; set; }
         public DbSet<MiniApp.Models.Shop>? Shop { get; set; }
+        public DbSet<MiniApp.Models.TimeTable>? timeTable { get; set; }
+        public DbSet<MiniApp.Models.Reserve>? reserve { get; set; }
     }
 }
 
