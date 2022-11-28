@@ -92,22 +92,14 @@ namespace MiniApp.Controllers
                 return BadRequest();
             }
             var reserveList = await _context.reserve
+                
+                .Where(r => r.open_id.Trim().Equals(user.open_id.Trim()))
                 .Join(_context.timeTable, r => r.time_table_id, t => t.id, (r, t) => new { t.shop_name, r.reserve_date, r.time_table_description})
-                .Where(r => r.open_id.Trim().Equals(user.open_id.Trim())).ToListAsync();
-                //.Join(_context.timeTable, t => t.time_table_id, r => r.ti).ToListAsync();
-            //HideOpenId(reserveList);
+                .ToListAsync();
             return reserveList;
 
         }
 
-        [NonAction]
-        public void HideOpenId(List<Reserve> list)
-        {
-            for (int i = 0; i < list.Count; i++)
-            {
-                list[i].open_id = "";
-            }
-        }
             
         /*
 
