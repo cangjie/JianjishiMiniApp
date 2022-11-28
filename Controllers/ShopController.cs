@@ -51,7 +51,7 @@ namespace MiniApp.Controllers
         }
 
         [HttpGet("{shopId}")]
-        public async Task<ActionResult<Reserve>> Reserve(int shopId, int timeTableId, DateTime date, string sessionKey)
+        public async Task<ActionResult<Reserve>> Reserve(int shopId, int timeTableId, DateTime date, string name, string cell, string sessionKey)
         {
             sessionKey = Util.UrlDecode(sessionKey).Trim();
             MiniUserController userHelper = new MiniUserController(_context, _config);
@@ -60,6 +60,10 @@ namespace MiniApp.Controllers
             {
                 return BadRequest();
             }
+            user.real_name = name;
+            user.cell_number = cell;
+            _context.Entry(user).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
             List<Reserve> rList = await _context.reserve
                 .Where(r => (r.open_id.Trim().Equals(user.open_id.Trim()) && r.reserve_date.Date == date.Date))
                 .ToListAsync();
@@ -92,12 +96,28 @@ namespace MiniApp.Controllers
                 return BadRequest();
             }
             var reserveList = await _context.reserve
-                
                 .Where(r => r.open_id.Trim().Equals(user.open_id.Trim()))
                 .Join(_context.timeTable, r => r.time_table_id, t => t.id, (r, t) => new { t.shop_name, r.reserve_date, r.time_table_description})
                 .ToListAsync();
-            return reserveList;
+            return Ok(reserveList);
 
+        }
+
+        [HttpGet("{sessionKey}")]
+        public async Task<ActionResult<IEnumerable<object>>> GetReserveByStaff(string sessionKey, int shopId, DateTime start, DateTime end)
+        {
+            sessionKey = Util.UrlDecode(sessionKey);
+            MiniUserController userHelper = new MiniUserController(_context, _config);
+            MiniUser user = (await userHelper.GetBySessionKey(sessionKey)).Value;
+            if (user == null || user.staff == 0)
+            {
+                return BadRequest();
+            }
+            var reserveList = await _context.reserve
+                .Join(_context.timeTable, r => r.time_table_id, t => t.id, (r, t) => new { r.open_id, t.shop_name, r.time_table_description, r.reserve_date })
+                .Join(_context.miniUser, tt => tt.open_id, u => u.open_id, (tt, u) => new { u.real_name, u.cell_number, tt.shop_name, tt.time_table_description, tt.reserve_date })
+                .ToListAsync();
+            return Ok(reserveList);
         }
 
             
