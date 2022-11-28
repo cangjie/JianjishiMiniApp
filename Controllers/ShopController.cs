@@ -80,6 +80,21 @@ namespace MiniApp.Controllers
             await _context.SaveChangesAsync();
             return r;
         }
+
+        [HttpGet("sessionKey")]
+        public async Task<ActionResult<IEnumerable<Reserve>>> GetMyReserve(string sessionKey)
+        {
+            sessionKey = Util.UrlDecode(sessionKey);
+            MiniUserController userHelper = new MiniUserController(_context, _config);
+            MiniUser user = (await userHelper.GetBySessionKey(sessionKey)).Value;
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            List<Reserve> reserveList = await _context.reserve.Where(r => r.open_id.Trim().Equals(user.open_id.Trim())).ToListAsync();
+            return reserveList;
+
+        }
             
         /*
 
