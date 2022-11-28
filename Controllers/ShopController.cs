@@ -81,7 +81,7 @@ namespace MiniApp.Controllers
             return r;
         }
 
-        [HttpGet("sessionKey")]
+        [HttpGet("{sessionKey}")]
         public async Task<ActionResult<IEnumerable<Reserve>>> GetMyReserve(string sessionKey)
         {
             sessionKey = Util.UrlDecode(sessionKey);
