@@ -82,7 +82,7 @@ namespace MiniApp.Controllers
         }
 
         [HttpGet("{sessionKey}")]
-        public async Task<ActionResult<IEnumerable<Reserve>>> GetMyReserve(string sessionKey)
+        public async Task<ActionResult<IEnumerable<object>>> GetMyReserve(string sessionKey)
         {
             sessionKey = Util.UrlDecode(sessionKey);
             MiniUserController userHelper = new MiniUserController(_context, _config);
@@ -91,9 +91,22 @@ namespace MiniApp.Controllers
             {
                 return BadRequest();
             }
-            List<Reserve> reserveList = await _context.reserve.Where(r => r.open_id.Trim().Equals(user.open_id.Trim())).ToListAsync();
+            var reserveList = await _context.reserve
+                .Join(_context.timeTable, r => r.time_table_id, t => t.id, (r, t) => new { t.shop_name, r.reserve_date, r.time_table_description, r.open_id })
+                .Where(r => r.open_id.Trim().Equals(user.open_id.Trim())).ToListAsync();
+                //.Join(_context.timeTable, t => t.time_table_id, r => r.ti).ToListAsync();
+            //HideOpenId(reserveList);
             return reserveList;
 
+        }
+
+        [NonAction]
+        public void HideOpenId(List<Reserve> list)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                list[i].open_id = "";
+            }
         }
             
         /*

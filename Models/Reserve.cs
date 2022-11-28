@@ -13,6 +13,9 @@ namespace MiniApp.Models
 		public int time_table_id { get; set; }
 		public string time_table_description { get; set; } = "";
 
+		[NotMapped]
+		public string shop_name { get; set; } = "";
+
 
 	}
 }
