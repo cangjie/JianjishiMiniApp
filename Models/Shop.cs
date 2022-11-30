@@ -10,7 +10,8 @@ namespace MiniApp.Models
 		public int id { get; set; }
 		public string name { get; set; } = "";
 		public int sort { get; set; }
-		
+		public string close_dates { get; set; } = "";
+
 	}
 }
 
