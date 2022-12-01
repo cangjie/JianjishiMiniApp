@@ -38,6 +38,7 @@ namespace MiniApp.Controllers
         [HttpGet("{shopId}")]
         public async Task<ActionResult<IEnumerable<TimeTable>>> GetTimeTable(int shopId, DateTime date)
         {
+
             List<TimeTable> timeList = await _context.timeTable.Where(t => (t.shop_id == shopId))
                 .OrderBy(t => t.id).ToListAsync();
             for (int i = 0; i < timeList.Count; i++)
@@ -46,6 +47,77 @@ namespace MiniApp.Controllers
                 List<Reserve> rList = await _context.reserve.Where(r => (r.time_table_id == t.id))
                     .ToListAsync();
                 t.avaliableCount = t.count - rList.Count;
+            }
+
+            Shop shop = await _context.Shop.FindAsync(shopId);
+            bool isAvaliable = true;
+            string[] closeDatesArr = shop.close_dates.Split(',');
+            for (int i = 0; i < closeDatesArr.Length; i++)
+            {
+                switch (closeDatesArr[i].Trim())
+                {
+                    case "0":
+                        if (date.DayOfWeek == DayOfWeek.Sunday)
+                        {
+                            isAvaliable = false;
+                        }
+                        break;
+                    case "1":
+                        if (date.DayOfWeek == DayOfWeek.Monday)
+                        {
+                            isAvaliable = false;
+                        }
+                        break;
+                    case "2":
+                        if (date.DayOfWeek == DayOfWeek.Tuesday)
+                        {
+                            isAvaliable = false;
+                        }
+                        break;
+                    case "3":
+                        if (date.DayOfWeek == DayOfWeek.Wednesday)
+                        {
+                            isAvaliable = false;
+                        }
+                        break;
+                    case "4":
+                        if (date.DayOfWeek == DayOfWeek.Thursday)
+                        {
+                            isAvaliable = false;
+                        }
+                        break;
+                    case "5":
+                        if (date.DayOfWeek == DayOfWeek.Friday)
+                        {
+                            isAvaliable = false;
+                        }
+                        break;
+                    case "6":
+                        if (date.DayOfWeek == DayOfWeek.Saturday)
+                        {
+                            isAvaliable = false;
+                        }
+                        break;
+                    default:
+                        try
+                        {
+                            if (DateTime.Parse(closeDatesArr[i].Trim()).Date == date.Date)
+                            {
+                                isAvaliable = false;
+                            }
+                        }
+                        catch
+                        {
+
+                        }
+                        
+                        break;
+
+                }
+            }
+            if (!isAvaliable)
+            {
+                timeList.Clear();
             }
             return timeList;
         }
