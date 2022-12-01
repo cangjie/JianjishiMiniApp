@@ -169,7 +169,8 @@ namespace MiniApp.Controllers
             }
             var reserveList = await _context.reserve
                 .Where(r => r.open_id.Trim().Equals(user.open_id.Trim()))
-                .Join(_context.timeTable, r => r.time_table_id, t => t.id, (r, t) => new { t.shop_name, r.reserve_date, r.time_table_description})
+                .Join(_context.timeTable, r => r.time_table_id, t => t.id, (r, t) => new {t.shop_id,  t.shop_name, r.reserve_date, r.time_table_description})
+                .Join(_context.Shop, rr => rr.shop_id, s => s.id, (rr, s) => new {rr.shop_id, rr.shop_name, rr.reserve_date, rr.time_table_description, s.address })
                 .ToListAsync();
             return Ok(reserveList);
 
