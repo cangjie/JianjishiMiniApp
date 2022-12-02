@@ -1,6 +1,8 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using MiniApp.Models;
+
+
 namespace MiniApp
 {
 	public class SqlServerContext: DbContext
@@ -19,6 +21,7 @@ namespace MiniApp
         public DbSet<MiniApp.Models.Shop>? Shop { get; set; }
         public DbSet<MiniApp.Models.TimeTable>? timeTable { get; set; }
         public DbSet<MiniApp.Models.Reserve>? reserve { get; set; }
+        public DbSet<InformList> informList { get; set; }
     }
 }
 
