@@ -169,15 +169,8 @@ namespace MiniApp.Controllers
                     try
                     {
                         string unionId = list[i].unionid;
-                        try
-                        {
-                            Util.GetWebContent("http://weixin.spineguard.cn/api/OfficialAccountApi/SendTextServiceMessage?unionId="
-                                + unionId.Trim()   , "POST", msg, "text/plain");
-                        }
-                        catch
-                        {
-
-                        }
+                        Util.GetWebContent("http://weixin.spineguard.cn/api/OfficialAccountApi/SendTextServiceMessage?unionId="
+                              + unionId.Trim()   , "POST", msg, "text/plain");
                         
 
                     }
