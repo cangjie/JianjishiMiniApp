@@ -154,6 +154,16 @@ namespace MiniApp.Controllers
             };
             await _context.reserve.AddAsync(r);
             await _context.SaveChangesAsync();
+
+            if (r.id > 0)
+            {
+                Shop shop = await _context.Shop.FindAsync(shopId);
+                string msg = "预约提醒 姓名：" + name + " 手机：" + cell + " 门店：" + shop.name + " 时间：" + t.description
+                    + " <a data-miniprogram-appid='" + _config.GetSection("Settings").GetSection("AppId").Value.Trim()
+                    + "' data-miniprogram-path='pages/reserve/admin?date=" + r.reserve_date.ToShortDateString() + "' >查看详情</a>";
+                Util.GetWebContent("http://weixin.spineguard.cn/api/OfficialAccountApi/SendTextServiceMessage?unionId=o5Ks56xQOZWimk9qY5hmyNnCIB84", "POST", msg, "text/plain");
+            }
+
             return r;
         }
 
