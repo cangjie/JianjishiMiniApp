@@ -12,6 +12,7 @@ namespace MiniApp.Models
 		public DateTime reserve_date { get; set; }
 		public int time_table_id { get; set; }
 		public string time_table_description { get; set; } = "";
+		public int cancel { get; set; } = 0;
 
 		[NotMapped]
 		public string shop_name { get; set; } = "";
