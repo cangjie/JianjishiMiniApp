@@ -225,7 +225,7 @@ namespace MiniApp.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Reserve>> GetReserve(int id, string sessionKey)
+        public async Task<ActionResult<object>> GetReserve(int id, string sessionKey)
         {
             sessionKey = Util.UrlDecode(sessionKey.Trim());
             MiniUserController userHelper = new MiniUserController(_context, _config);
@@ -234,15 +234,17 @@ namespace MiniApp.Controllers
             {
                 return BadRequest();
             }
-            Reserve r = await _context.reserve.FindAsync(id);
-            if (user.staff == 1 || user.open_id.Trim().Equals(r.open_id.Trim()))
-            {
-                return r;
-            }
-            else
-            {
-                return BadRequest();
-            }
+            var r = await _context.reserve.Where(r => r.id == id)
+               .Join(_context.timeTable, r => r.time_table_id, t => t.id,
+               (r, t) => new { r.id, r.open_id, r.reserve_date, r.time_table_description, r.time_table_id, t.shop_id, t.shop_name })
+               .Join(_context.miniUser, r => r.open_id, u => u.open_id,
+               (r, u) => new { r.id, r.open_id, r.reserve_date, r.time_table_description, r.time_table_id, r.shop_id, r.shop_name, u.real_name, u.cell_number })
+               .Where(r => (user.staff == 1 || r.open_id.Trim().Equals(user.open_id))).FirstAsync();
+
+            return r;
+
+
+           
         }
 
             
