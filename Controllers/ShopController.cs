@@ -224,6 +224,27 @@ namespace MiniApp.Controllers
             return Ok(reserveList);
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Reserve>> GetReserve(int id, string sessionKey)
+        {
+            sessionKey = Util.UrlDecode(sessionKey.Trim());
+            MiniUserController userHelper = new MiniUserController(_context, _config);
+            MiniUser user = (await userHelper.GetBySessionKey(sessionKey)).Value;
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            Reserve r = await _context.reserve.FindAsync(id);
+            if (user.staff == 1 || user.open_id.Trim().Equals(r.open_id.Trim()))
+            {
+                return r;
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
             
         /*
 
