@@ -198,8 +198,8 @@ namespace MiniApp.Controllers
             }
             var reserveList = await _context.reserve
                 .Where(r => (r.open_id.Trim().Equals(user.open_id.Trim()) && r.cancel == 0))
-                .Join(_context.timeTable, r => r.time_table_id, t => t.id, (r, t) => new {t.shop_id,  t.shop_name, r.reserve_date, r.time_table_description})
-                .Join(_context.Shop, rr => rr.shop_id, s => s.id, (rr, s) => new {rr.shop_id, rr.shop_name, rr.reserve_date, rr.time_table_description, s.address })
+                .Join(_context.timeTable, r => r.time_table_id, t => t.id, (r, t) => new {r.id, t.shop_id,  t.shop_name, r.reserve_date, r.time_table_description})
+                .Join(_context.Shop, rr => rr.shop_id, s => s.id, (rr, s) => new {rr.id, rr.shop_id, rr.shop_name, rr.reserve_date, rr.time_table_description, s.address })
                 .ToListAsync();
             return Ok(reserveList);
 
@@ -216,9 +216,9 @@ namespace MiniApp.Controllers
                 return BadRequest();
             }
             var reserveList = await _context.reserve.Where(r => r.cancel == 0)
-                .Join(_context.timeTable, r => r.time_table_id, t => t.id, (r, t) => new { r.open_id, t.shop_name, r.time_table_description, r.reserve_date, t.shop_id })
+                .Join(_context.timeTable, r => r.time_table_id, t => t.id, (r, t) => new {r.id, r.open_id, t.shop_name, r.time_table_description, r.reserve_date, t.shop_id })
                 .Where(t => ((shopId == 0 || t.shop_id == shopId) && t.reserve_date >= start.Date && t.reserve_date <= end.Date  ))
-                .Join(_context.miniUser, tt => tt.open_id, u => u.open_id, (tt, u) => new { u.real_name, u.cell_number, tt.shop_name, tt.time_table_description, tt.reserve_date })
+                .Join(_context.miniUser, tt => tt.open_id, u => u.open_id, (tt, u) => new {tt.id, u.real_name, u.cell_number, tt.shop_name, tt.time_table_description, tt.reserve_date })
                 
                 .ToListAsync();
             return Ok(reserveList);
