@@ -31,8 +31,7 @@ namespace MiniApp.Controllers
             {
                 return NotFound();
             }
-            return await _context.Shop.OrderBy(s => s.sort)
-                .OrderBy(s => s.id).ToListAsync();
+            return await _context.Shop.OrderByDescending(s => s.sort).ToListAsync();
         }
 
         [HttpGet("{shopId}")]
