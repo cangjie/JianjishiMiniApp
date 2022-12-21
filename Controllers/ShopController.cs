@@ -121,6 +121,23 @@ namespace MiniApp.Controllers
             return timeList;
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Reserve>> ModReserve(int id, int shopId, int timeTableId, string sessionKey)
+        {
+            sessionKey = Util.UrlDecode(sessionKey).Trim();
+            MiniUserController userHelper = new MiniUserController(_context, _config);
+            MiniUser? user = (await userHelper.GetBySessionKey(sessionKey)).Value;
+            Reserve? reserve = await _context.reserve.FindAsync(id);
+            if (reserve == null || user == null ||  !user.open_id.Trim().Equals(reserve.open_id.Trim()))
+            {
+                return BadRequest();
+            }
+            reserve.cancel = 1;
+            _context.Entry(reserve).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return await Reserve(shopId, timeTableId, reserve.reserve_date, user.real_name, user.cell_number, sessionKey);
+        }
+
         [HttpGet("{shopId}")]
         public async Task<ActionResult<Reserve>> Reserve(int shopId, int timeTableId, DateTime date, string name, string cell, string sessionKey)
         {
@@ -136,7 +153,7 @@ namespace MiniApp.Controllers
             _context.Entry(user).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             List<Reserve> rList = await _context.reserve
-                .Where(r => (r.open_id.Trim().Equals(user.open_id.Trim()) && r.reserve_date.Date == date.Date))
+                .Where(r => (r.open_id.Trim().Equals(user.open_id.Trim()) && r.reserve_date.Date == date.Date && r.cancel == 0 ))
                 .ToListAsync();
             if (rList.Count > 0)
             {
