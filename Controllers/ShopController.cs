@@ -43,7 +43,7 @@ namespace MiniApp.Controllers
             for (int i = 0; i < timeList.Count; i++)
             {
                 TimeTable t = timeList[i];
-                List<Reserve> rList = await _context.reserve.Where(r => (r.time_table_id == t.id))
+                List<Reserve> rList = await _context.reserve.Where(r => (r.time_table_id == t.id && r.reserve_date == date.Date))
                     .ToListAsync();
                 t.avaliableCount = t.count - rList.Count;
             }
