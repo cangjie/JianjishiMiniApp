@@ -11,6 +11,7 @@ using SKIT.FlurlHttpClient.Wechat.TenpayV3;
 using SKIT.FlurlHttpClient.Wechat.TenpayV3.Models;
 using SKIT.FlurlHttpClient.Wechat.TenpayV3.Settings;
 using MiniApp.Models;
+using System.Text;
 
 namespace MiniApp.Controllers
 {
@@ -155,7 +156,7 @@ namespace MiniApp.Controllers
             _context.Entry(order).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
-            string notifyUrl = "https://mini.snowmeet.top/core/OrderPayment/TenpayPaymentCallBack/" + mchid.ToString();
+            string notifyUrl = "https://mini.spineguard.cn/api/Order/TenpayCallBack/" + mchid.ToString();
             string? outTradeNo = payment.out_trade_no;
             if (outTradeNo == null || outTradeNo.Length != 20)
             {
@@ -210,6 +211,148 @@ namespace MiniApp.Controllers
             }
             return BadRequest();
         }
+
+        [HttpPost("{mchid}")]
+        public async Task<ActionResult<string>> TenpayCallback(int mchid,
+            [FromHeader(Name = "Wechatpay-Timestamp")] string timeStamp,
+            [FromHeader(Name = "Wechatpay-Nonce")] string nonce,
+            [FromHeader(Name = "Wechatpay-Signature")] string paySign,
+            [FromHeader(Name = "Wechatpay-Serial")] string serial)
+        {
+            using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+            string postJson = await reader.ReadToEndAsync();
+
+            string apiKey = "";
+            WepayKey key = _context.WepayKeys.Find(mchid);
+
+            if (key == null)
+            {
+                return NotFound();
+            }
+
+            apiKey = key.api_key.Trim();
+
+            if (apiKey == null || apiKey.Trim().Equals(""))
+            {
+                return NotFound();
+            }
+            string path = $"{Environment.CurrentDirectory}";
+    
+            if (path.StartsWith("/"))
+            {
+                path = path + "/WepayCertificate/";
+            }
+            else
+            {
+                path = path + "\\WepayCertificate\\";
+            }
+            string dateStr = DateTime.Now.Year.ToString() + DateTime.Now.Month.ToString().PadLeft(2, '0')
+                + DateTime.Now.Day.ToString().PadLeft(2, '0');
+            //path = path + "callback_" +  + ".txt";
+            // 此文本只添加到文件一次。
+            using (StreamWriter fw = new StreamWriter(path + "callback_origin_" + dateStr + ".txt", true))
+            {
+                fw.WriteLine(DateTimeOffset.Now.ToString());
+                fw.WriteLine(serial);
+                fw.WriteLine(timeStamp);
+                fw.WriteLine(nonce);
+                fw.WriteLine(paySign);
+                fw.WriteLine(postJson);
+                fw.WriteLine("");
+                fw.WriteLine("--------------------------------------------------------");
+                fw.WriteLine("");
+                fw.Close();
+            }
+
+            try
+            {
+                string cerStr = "";
+                using (StreamReader sr = new StreamReader(path + serial.Trim() + ".pem", true))
+                {
+                    cerStr = sr.ReadToEnd();
+                    sr.Close();
+                }
+                CertificateEntry ce = new CertificateEntry("RSA", cerStr);
+
+                //CertificateEntry ce = new CertificateEntry()
+
+                var manager = new InMemoryCertificateManager();
+                manager.AddEntry(ce);
+                var options = new WechatTenpayClientOptions()
+                {
+                    MerchantId = key.mch_id.Trim(),
+                    MerchantV3Secret = apiKey,
+                    MerchantCertificateSerialNumber = key.key_serial,
+                    MerchantCertificatePrivateKey = key.private_key,
+                    PlatformCertificateManager = manager
+
+                };
+
+                var client = new WechatTenpayClient(options);
+                Exception? verifyErr;
+                bool valid = client.VerifyEventSignature(timeStamp, nonce, postJson, paySign, serial, out verifyErr);
+        
+                if (valid)
+                {
+                    var callbackModel = client.DeserializeEvent(postJson);
+                    if ("TRANSACTION.SUCCESS".Equals(callbackModel.EventType))
+                    {
+                        /* 根据事件类型，解密得到支付通知敏感数据 */
+
+                        var callbackResource = client.DecryptEventResource<SKIT.FlurlHttpClient.Wechat.TenpayV3.Events.TransactionResource>(callbackModel);
+                        string outTradeNumber = callbackResource.OutTradeNumber;
+                        string transactionId = callbackResource.TransactionId;
+                        string callbackStr = Newtonsoft.Json.JsonConvert.SerializeObject(callbackResource);
+                        try
+                        {
+                            using (StreamWriter sw = new StreamWriter(path + "callback_decrypt_" + dateStr + ".txt", true))
+                            {
+                                sw.WriteLine(DateTimeOffset.Now.ToString());
+                                sw.WriteLine(callbackStr);
+                                sw.WriteLine("");
+                                sw.Close();
+                            }
+                        }
+                        catch
+                        {
+
+                        }
+                        await SetTenpayPaymentSuccess(outTradeNumber);
+
+                        //Console.WriteLine("订单 {0} 已完成支付，交易单号为 {1}", outTradeNumber, transactionId);
+                    }
+                }
+
+            }
+            catch (Exception err)
+            {
+                Console.WriteLine(err.ToString());
+            }
+            return "{ \r\n \"code\": \"SUCCESS\", \r\n \"message\": \"成功\" \r\n}";
+        }
+
+        private async  Task SetTenpayPaymentSuccess(string outTradeNumber)
+        {
+            var pl = await _context.orderPayment.Where(p => p.out_trade_no.Trim().Equals(outTradeNumber.Trim())).ToListAsync();
+            if (pl == null || pl.Count > 0)
+            {
+                return;
+            }
+            OrderPayment payment = pl[0];
+            payment.status = "支付成功";
+            _context.orderPayment.Entry(payment).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            OrderOnline order = await _context.OrderOnline.FindAsync(payment.order_id);
+            if (order == null)
+            {
+                return;
+            }
+            order.pay_state = 1;
+            order.pay_time = DateTime.Now;
+            _context.OrderOnline.Entry(order).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
+
 
 
         private bool OrderOnlineExists(int id)

@@ -31,8 +31,10 @@
     <None Remove="Microsoft.EntityFrameworkCore.Tools" />
     <None Remove="Microsoft.EntityFrameworkCore.Sqlite" />
     <None Remove="Models\Order\" />
+    <None Remove="WepayCertificate\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\Order\" />
+    <Folder Include="WepayCertificate\" />
   </ItemGroup>
 </Project>
