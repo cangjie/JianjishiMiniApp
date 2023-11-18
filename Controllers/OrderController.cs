@@ -522,7 +522,7 @@ namespace MiniApp.Controllers
 
             var certManager = new InMemoryCertificateManager();
 
-            CertificateEntry ce = new CertificateEntry("AEAD_AES_256_GCM", serial, cerStr, DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
+            CertificateEntry ce = new CertificateEntry("RSA", serial, cerStr, DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
 
 
             certManager.AddEntry(ce);
@@ -547,7 +547,8 @@ namespace MiniApp.Controllers
                         var callbackResource = client.DecryptEventResource<SKIT.FlurlHttpClient.Wechat.TenpayV3.Events.TransactionResource>(callbackModel);
                         OrderPayment payment = await _context.orderPayment
                             .Where(p => p.out_trade_no.Trim().Equals(callbackResource.OutTradeNumber)
-                            && p.pay_method.Trim().Equals("微信支付") && p.status.Trim().Equals("支付成功"))
+                            //&& p.pay_method.Trim().Equals("微信支付") && p.status.Trim().Equals("支付成功")
+                            )
                             .OrderByDescending(p => p.id).FirstAsync();
 
 
@@ -560,9 +561,9 @@ namespace MiniApp.Controllers
                         _context.Entry(refund).State = EntityState.Modified;
                         await _context.SaveChangesAsync();
                     }
-                    catch
+                    catch(Exception err)
                     {
-
+                        Console.WriteLine(err);
                     }
 
 
