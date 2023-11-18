@@ -219,7 +219,7 @@ namespace MiniApp.Controllers
             [FromHeader(Name = "Wechatpay-Signature")] string paySign,
             [FromHeader(Name = "Wechatpay-Serial")] string serial)
         {
-            using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+            var reader = new StreamReader(Request.Body, Encoding.UTF8);
             string postJson = await reader.ReadToEndAsync();
 
             string apiKey = "";

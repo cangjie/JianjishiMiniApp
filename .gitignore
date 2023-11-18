@@ -12,3 +12,4 @@ MiniApp.pdb
 MiniApp
 republish.sh
 MiniApp.runtimeconfig.json
+WepayCertificate/*.txt
