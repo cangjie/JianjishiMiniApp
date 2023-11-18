@@ -73,7 +73,7 @@ namespace MiniApp.Controllers
             }
             else
             {
-                return userList[0];
+                return Ok(userList[0]);
             }
             
         }

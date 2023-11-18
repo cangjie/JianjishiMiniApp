@@ -20,6 +20,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0" />
+    <PackageReference Include="SKIT.FlurlHttpClient.Wechat.TenpayV3" Version="2.20.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,5 +30,9 @@
     <None Remove="Microsoft.VisualStudio.Web.CodeGeneration.Design" />
     <None Remove="Microsoft.EntityFrameworkCore.Tools" />
     <None Remove="Microsoft.EntityFrameworkCore.Sqlite" />
+    <None Remove="Models\Order\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Models\Order\" />
   </ItemGroup>
 </Project>

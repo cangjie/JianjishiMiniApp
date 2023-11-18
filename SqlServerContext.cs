@@ -1,6 +1,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using MiniApp.Models;
+using MiniApp.Models.Order;
 
 
 namespace MiniApp
@@ -22,6 +23,14 @@ namespace MiniApp
         public DbSet<MiniApp.Models.TimeTable>? timeTable { get; set; }
         public DbSet<MiniApp.Models.Reserve>? reserve { get; set; }
         public DbSet<InformList> informList { get; set; }
+        public DbSet<MiniApp.Models.Order.OrderOnline> OrderOnline { get; set; } = default!;
+        /*
+        public DbSet<OrderOnline> orderOnline { get; set; }
+        */
+        public DbSet<OrderPayment> orderPayment { get; set; }
+        public DbSet<OrderPaymentRefund> orderPaymentRefund { get; set; }
+        public DbSet<WepayKey> WepayKeys { get; set; }
+
     }
 }
 
