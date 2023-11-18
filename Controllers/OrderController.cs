@@ -331,7 +331,8 @@ namespace MiniApp.Controllers
             return "{ \r\n \"code\": \"SUCCESS\", \r\n \"message\": \"成功\" \r\n}";
         }
 
-        private async  Task SetTenpayPaymentSuccess(string outTradeNumber)
+        [HttpGet("{outTradeNumber}")]
+        public async  Task SetTenpayPaymentSuccess(string outTradeNumber)
         {
             var pl = await _context.orderPayment.Where(p => p.out_trade_no.Trim().Equals(outTradeNumber.Trim())).ToListAsync();
             if (pl == null || pl.Count == 0)
