@@ -13,9 +13,12 @@ namespace MiniApp.Models
 		public int time_table_id { get; set; }
 		public string time_table_description { get; set; } = "";
 		public int cancel { get; set; } = 0;
+		public int therapeutist_time_id {get; set;} = 0;
 
 		[NotMapped]
 		public string shop_name { get; set; } = "";
+		[NotMapped]
+		public bool valid {get; set;} = true;
 
 
 	}

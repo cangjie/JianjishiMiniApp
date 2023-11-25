@@ -12,6 +12,8 @@ namespace MiniApp.Models
 		public int sort { get; set; }
 		public string close_dates { get; set; } = "";
 		public string address { get; set; } = "";
+
+		public string region {get; set;} = "";
 	}
 }
 

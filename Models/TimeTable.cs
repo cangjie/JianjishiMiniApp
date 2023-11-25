@@ -13,9 +13,17 @@ namespace MiniApp.Models
 		public string description { get; set; } = "";
 		public int count { get; set; }
 		public int in_use { get; set; }
+		public DateTime start_date {get; set;}
+		public DateTime end_date {get; set;}
 
 		[NotMapped]
 		public int avaliableCount { get; set; } = 0;
+
+		[NotMapped]
+		public List<Reserve> reserveList {get; set;}
+
+		[NotMapped]
+		public List<TherapeutistTimeTable> therapeutistTimeList {get; set;}
 	}
 }
 

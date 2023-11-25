@@ -37,4 +37,7 @@
     <Folder Include="Models\Order\" />
     <Folder Include="WepayCertificate\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JianjishiOfficialAccount\OA.csproj" />
+  </ItemGroup>
 </Project>
