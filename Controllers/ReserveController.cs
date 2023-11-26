@@ -16,10 +16,13 @@ namespace MiniApp.Controllers
     {
         private readonly SqlServerContext _context;
         private readonly IConfiguration _config;
+
+        private readonly OrderController _orderHelper;
         public ReserveController(SqlServerContext context, IConfiguration config)
         {
             _context = context;
             _config = config;
+            _orderHelper = new OrderController(context, config);
         }
 
         
@@ -47,11 +50,50 @@ namespace MiniApp.Controllers
         }
 
         [NonAction]
+        public async Task<Reserve> GetReserve(int reserveId)
+        {
+            Reserve r = await _context.reserve.FindAsync(reserveId);
+            if (r == null)
+            {
+                return null;
+            }
+            bool valid = r.cancel == 0? true : false;
+            if (r.order_id != 0)
+            {
+                r.order = await _orderHelper.GetOrder(r.order_id);
+                if (r.cancel == 0 && r.order.pay_state != 1 
+                    && r.order.create_date < DateTime.Now.AddMinutes(-30) )
+                {
+                    valid = false;
+                    r.cancel = 1;
+                    r.cancel_memo = "超时未支付，自动取消。";
+                    _context.Entry(r).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+                }
+            }
+            return r;
+        }
+
+        [NonAction]
         public async Task<TimeTable> GetTimeTable(int id, DateTime date)
         {
             TimeTable t = await _context.timeTable.FindAsync(id);
-            t.reserveList = await _context.reserve.Where(r => (r.time_table_id == id) )
+            var rList = await _context.reserve.Where(r => (r.time_table_id == id) )
                 .AsNoTracking().ToListAsync();
+            List<Reserve> avalReserveList = new List<Reserve>();
+            for(int i = 0; i < rList.Count; i++)
+            {
+                Reserve r = await GetReserve(rList[i].id);
+                if (r.valid)
+                {
+                    avalReserveList.Add(r);
+                }
+
+            }
+
+
+
+            t.reserveList = avalReserveList;
             t.avaliableCount = t.count - t.reserveList.Count;
 
             var therapeutistTimeList = await _context.therapeutistTimeTable

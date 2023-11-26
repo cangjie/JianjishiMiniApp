@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using MiniApp.Models.Order;
 namespace MiniApp.Models
 {
 	[Table("reserve")]
@@ -13,9 +14,14 @@ namespace MiniApp.Models
 		public int time_table_id { get; set; }
 		public string time_table_description { get; set; } = "";
 		public int cancel { get; set; } = 0;
+		public string cancel_memo {get; set;} = "";
 		public int therapeutist_time_id {get; set;} = 0;
-
-		[NotMapped]
+		public string therapeutist_name {get; set;} = "";
+		public int product_id {get; set;} = 0;
+		
+		public string product_name {get; set;} = "";
+		public int order_id {get; set;}
+		public OrderOnline? order {get; set;} = null;
 		public string shop_name { get; set; } = "";
 		[NotMapped]
 		public bool valid {get; set;} = true;

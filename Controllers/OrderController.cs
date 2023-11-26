@@ -60,6 +60,14 @@ namespace MiniApp.Controllers
             public string timeStamp { get; set; }
         }
 
+        [NonAction]
+        public async Task<OrderOnline> GetOrder(int orderId)
+        {
+            OrderOnline order = await _context.OrderOnline.FindAsync(orderId);
+            order.payments = await _context.orderPayment.Where(p => p.order_id == orderId).ToArrayAsync();
+            return order;
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<OrderOnline>> GetWholeOrder(int id, string sessionKey)
         {
