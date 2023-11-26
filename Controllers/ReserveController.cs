@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiniApp;
 using MiniApp.Models;
+using MiniApp.Models.Order;
 
 namespace MiniApp.Controllers
 {
@@ -18,11 +19,13 @@ namespace MiniApp.Controllers
         private readonly IConfiguration _config;
 
         private readonly OrderController _orderHelper;
+        private readonly MiniUserController _userHelper;
         public ReserveController(SqlServerContext context, IConfiguration config)
         {
             _context = context;
             _config = config;
             _orderHelper = new OrderController(context, config);
+            _userHelper = new MiniUserController(context, config);
         }
 
         
@@ -130,6 +133,96 @@ namespace MiniApp.Controllers
         {
 
             return Ok(await GetShopDailyTimeTable(shopId, date));
+        }
+
+        [HttpGet("{shopId}")]
+        public async Task<ActionResult<Reserve>> Reserve(int shopId, int productId, int timeId, int therapeutistTimeId, DateTime date, string sessionKey)
+        {
+            sessionKey = Util.UrlDecode(sessionKey);
+            MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
+            date = date.Date;
+            Product product = await _context.product.FindAsync(productId);
+            Shop shop = await _context.Shop.FindAsync(shopId);
+            TimeTable rTimeTable = await _context.timeTable.FindAsync(timeId);
+            TherapeutistTimeTable theraTimeTable = await _context.therapeutistTimeTable.FindAsync(therapeutistTimeId);
+            
+            if (product == null || user == null || shop == null || rTimeTable == null || theraTimeTable == null)
+            {
+                return BadRequest();
+            }
+            Therapeutist therapeutist = await _context.therapuetist.FindAsync(theraTimeTable.therapeutist_id);
+            if (therapeutist == null)
+            {
+                return BadRequest();
+            }
+            ShopDailyTimeList l = await GetShopDailyTimeTable(shopId, date);
+            bool avaliable = false;
+            for(int i = 0; i < l.timeList.Count; i++)
+            {
+                if (l.timeList[i].id == timeId)
+                {
+                    TimeTable timeTable = l.timeList[i];
+                    if (timeTable.avaliableCount > 0)
+                    {
+                        if (product.need_therapeutist == 1)
+                        {
+                            for(int j = 0; j < timeTable.therapeutistTimeList.Count; j++)
+                            {
+                                if (timeTable.therapeutistTimeList[j].id == therapeutistTimeId && timeTable.therapeutistTimeList[j].avaliable)
+                                {
+                                    avaliable = true;
+                                }
+                                
+                            }
+                        }
+                        else
+                        {
+                            avaliable = true;
+                        }
+
+                    }
+
+                }
+
+            }
+            if (!avaliable)
+            {
+                return BadRequest();
+            }
+            OrderOnline order = new OrderOnline()
+            {
+                open_id = user.open_id,
+                cell_number = user.cell_number.Trim(),
+                name = user.real_name.Trim(),
+                pay_method = "微信支付",
+                order_price = product.sale_price,
+                order_real_pay_price = product.sale_price,
+                pay_state = 0,
+                pay_memo = "预约订单",
+                code = "",
+                memo = "",
+                shop = shop.name.Trim(),
+                final_price = product.sale_price
+            };
+            await _context.OrderOnline.AddAsync(order);
+            await _context.SaveChangesAsync();
+            Reserve reserve = new Reserve()
+            {
+                open_id = user.open_id,
+                reserve_date = date,
+                time_table_id = timeId,
+                time_table_description = rTimeTable.description,
+                therapeutist_name = therapeutist.name,
+                shop_name = shop.name,
+                product_id = product.id,
+                product_name = product.name,
+                order_id = order.id,
+                cancel = 0
+
+            };
+            await _context.reserve.AddAsync(reserve);
+            await _context.SaveChangesAsync();
+            return Ok(await GetReserve(reserve.id));
         }
 
     }
