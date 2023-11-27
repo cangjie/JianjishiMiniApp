@@ -21,6 +21,7 @@ namespace MiniApp.Models
 		
 		public string product_name {get; set;} = "";
 		public int order_id {get; set;}
+		[NotMapped]
 		public OrderOnline? order {get; set;} = null;
 		public string shop_name { get; set; } = "";
 		[NotMapped]

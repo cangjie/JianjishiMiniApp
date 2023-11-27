@@ -127,6 +127,31 @@ namespace MiniApp.Controllers
             return t;
 
         }
+
+        [NonAction]
+        public async Task<List<Reserve>> GetAvaliableReserveList(string openId)
+        {
+            var originList = await _context.reserve.Where(r => r.open_id.Trim().Equals(openId.Trim()))
+                .AsNoTracking().ToListAsync();
+            List<Reserve> l = new List<Reserve>();
+            for (int i = 0; i < originList.Count; i++)
+            {
+                Reserve r = await GetReserve(originList[i].id);
+                if (r.valid)
+                {
+                    l.Add(r);
+                }
+            }
+            return l;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<Reserve>>> GetMyReserveList(string sessionKey)
+        {
+            sessionKey = Util.UrlDecode(sessionKey);
+            MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
+            return Ok(await GetAvaliableReserveList(user.open_id));
+        }
         
         [HttpGet("{shopId}")]
         public async Task<ActionResult<ShopDailyTimeList>> GetShopDailyTimeList(int shopId, DateTime date, string sessionKey)
@@ -141,20 +166,59 @@ namespace MiniApp.Controllers
             sessionKey = Util.UrlDecode(sessionKey);
             MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
             date = date.Date;
+
+            bool dup = false;
+            List<Reserve> myReserveList = await GetAvaliableReserveList(user.open_id);
+            for (int i = 0; i < myReserveList.Count; i++)
+            {
+                Reserve r = myReserveList[i];
+                if (r.reserve_date.Date == date && r.time_table_id == timeId)
+                {
+                    dup = true;
+                    break;
+                }
+            }
+
+            if (dup)
+            {
+                return NoContent();
+            }
+
+
+
+            
             Product product = await _context.product.FindAsync(productId);
             Shop shop = await _context.Shop.FindAsync(shopId);
             TimeTable rTimeTable = await _context.timeTable.FindAsync(timeId);
-            TherapeutistTimeTable theraTimeTable = await _context.therapeutistTimeTable.FindAsync(therapeutistTimeId);
+
+
+
+            TherapeutistTimeTable? theraTimeTable;
+            Therapeutist? therapeutist;
+            string therapeutistName = "";
+            if (therapeutistTimeId > 0)
+            {
+                theraTimeTable = await _context.therapeutistTimeTable.FindAsync(therapeutistTimeId);
+                if (theraTimeTable == null)
+                {
+                    return BadRequest();
+                }
+                therapeutist = await _context.therapuetist.FindAsync(theraTimeTable.therapeutist_id);
+                if (therapeutist == null)
+                {
+                    return BadRequest();
+                }
+                therapeutistName = therapeutist.name;
+            }
+
             
-            if (product == null || user == null || shop == null || rTimeTable == null || theraTimeTable == null)
+            
+            if (product == null || user == null || shop == null || rTimeTable == null )
             {
                 return BadRequest();
             }
-            Therapeutist therapeutist = await _context.therapuetist.FindAsync(theraTimeTable.therapeutist_id);
-            if (therapeutist == null)
-            {
-                return BadRequest();
-            }
+             
+            
             ShopDailyTimeList l = await GetShopDailyTimeTable(shopId, date);
             bool avaliable = false;
             for(int i = 0; i < l.timeList.Count; i++)
@@ -171,6 +235,7 @@ namespace MiniApp.Controllers
                                 if (timeTable.therapeutistTimeList[j].id == therapeutistTimeId && timeTable.therapeutistTimeList[j].avaliable)
                                 {
                                     avaliable = true;
+                                    break;
                                 }
                                 
                             }
@@ -181,6 +246,7 @@ namespace MiniApp.Controllers
                         }
 
                     }
+                    break;
 
                 }
 
@@ -191,6 +257,7 @@ namespace MiniApp.Controllers
             }
             OrderOnline order = new OrderOnline()
             {
+                type = "门店预约",
                 open_id = user.open_id,
                 cell_number = user.cell_number.Trim(),
                 name = user.real_name.Trim(),
@@ -206,13 +273,15 @@ namespace MiniApp.Controllers
             };
             await _context.OrderOnline.AddAsync(order);
             await _context.SaveChangesAsync();
+            
             Reserve reserve = new Reserve()
             {
                 open_id = user.open_id,
                 reserve_date = date,
                 time_table_id = timeId,
                 time_table_description = rTimeTable.description,
-                therapeutist_name = therapeutist.name,
+                therapeutist_time_id = therapeutistTimeId,
+                therapeutist_name = therapeutistName,
                 shop_name = shop.name,
                 product_id = product.id,
                 product_name = product.name,
