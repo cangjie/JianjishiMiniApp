@@ -12,7 +12,7 @@ namespace MiniApp.Models
 		public int sort { get; set; }
 		public string close_dates { get; set; } = "";
 		public string address { get; set; } = "";
-
+		public int hidden { get; set; } = 0;
 		public string region {get; set;} = "";
 	}
 }

@@ -8,6 +8,7 @@ namespace MiniApp.Models
     {
         [Key]
         public  int     id                  {get; set;}
+        public  string  type                {get; set;}
         public  string  name                {get; set;}
         public  string  sub_title           {get; set;}   
         public  string  desc                {get; set;}

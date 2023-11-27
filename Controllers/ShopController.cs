@@ -34,6 +34,20 @@ namespace MiniApp.Controllers
             return await _context.Shop.OrderByDescending(s => s.sort).ToListAsync();
         }
 
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Shop>>> GetShopByRegion(string region)
+        {
+            if (_context.Shop == null)
+            {
+                return NotFound();
+            }
+            return await _context.Shop
+                .Where(s => s.region.Trim().Equals(region.Trim()) && s.hidden == 0)
+                .OrderByDescending(s => s.sort).ToListAsync();
+        }
+
+
+
         [HttpGet("{shopId}")]
         public async Task<ActionResult<IEnumerable<TimeTable>>> GetTimeTable(int shopId, DateTime date)
         {
