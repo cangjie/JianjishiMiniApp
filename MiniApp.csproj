@@ -41,5 +41,4 @@
     <Folder Include="Models\Order\" />
     <Folder Include="WepayCertificate\" />
   </ItemGroup>
-  
 </Project>
