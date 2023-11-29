@@ -22,6 +22,11 @@ namespace MiniApp.Controllers
             _context = context;
             _config = config;
         }
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Shop>> GetSingleShop(int id)
+        {
+            return Ok(_context.Shop.FindAsync(id));
+        }
 
         // GET: api/Shop
         [HttpGet]

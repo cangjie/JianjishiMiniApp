@@ -25,6 +25,12 @@ namespace MiniApp.Controllers
                 .Where(p => p.type.Trim().Equals("单次预约") && p.region.Trim().Equals(region.Trim()))
                 .AsNoTracking().ToListAsync());
         }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Product>> GetSingleProduct(int id)
+        {
+            return Ok(_context.product.FindAsync(id));
+        }
 	}
 }
 
