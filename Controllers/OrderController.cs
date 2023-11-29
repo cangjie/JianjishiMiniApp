@@ -115,6 +115,25 @@ namespace MiniApp.Controllers
             return await GetWholeOrder(order.id, sessionKey);
         }
 
+        [HttpGet("{orderId}")]
+        public async Task<ActionResult<TenpaySet>> PayOrder(int orderId, string sessionKey)
+        {
+            sessionKey = Util.UrlDecode(sessionKey.Trim());
+            MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
+            OrderOnline order = await _context.OrderOnline.FindAsync(orderId);
+            OrderPayment payment = new OrderPayment()
+            {
+                order_id = order.id,
+                mch_id = 1,
+                amount = order.final_price,
+                open_id = user.open_id,
+                pay_method = "微信支付"
+            };
+            await _context.orderPayment.AddAsync(payment);
+            await _context.SaveChangesAsync();
+            return await TenpayRequest(payment.id, sessionKey);
+        }
+
         [HttpGet("{paymentId}")]
         public async Task<ActionResult<TenpaySet>> TenpayRequest(int paymentId, string sessionKey)
         {
