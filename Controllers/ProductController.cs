@@ -29,7 +29,7 @@ namespace MiniApp.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> GetSingleProduct(int id)
         {
-            return Ok(_context.product.FindAsync(id));
+            return Ok(await _context.product.FindAsync(id));
         }
 	}
 }
