@@ -311,6 +311,7 @@ namespace MiniApp.Controllers
             {
                 item.shopTimeTable = await _context.timeTable.FindAsync(item.shop_time_id);
             }
+            item.therapeutist = await _context.therapuetist.FindAsync(item.therapeutist_id);
             return Ok(item);
         }
 
