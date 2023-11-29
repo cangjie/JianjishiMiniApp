@@ -160,8 +160,8 @@ namespace MiniApp.Controllers
             return Ok(await GetShopDailyTimeTable(shopId, date));
         }
 
-        [HttpGet("{shopId}")]
-        public async Task<ActionResult<Reserve>> Reserve(int shopId, int productId, int timeId, int therapeutistTimeId, DateTime date, string sessionKey)
+        [HttpGet("{productId}")]
+        public async Task<ActionResult<Reserve>> Reserve(int productId, int timeId, int therapeutistTimeId, DateTime date, string sessionKey)
         {
             sessionKey = Util.UrlDecode(sessionKey);
             MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
@@ -188,9 +188,9 @@ namespace MiniApp.Controllers
 
             
             Product product = await _context.product.FindAsync(productId);
-            Shop shop = await _context.Shop.FindAsync(shopId);
+            
             TimeTable rTimeTable = await _context.timeTable.FindAsync(timeId);
-
+            Shop shop = await _context.Shop.FindAsync(rTimeTable.shop_id);
 
 
             TherapeutistTimeTable? theraTimeTable;
@@ -219,7 +219,7 @@ namespace MiniApp.Controllers
             }
              
             
-            ShopDailyTimeList l = await GetShopDailyTimeTable(shopId, date);
+            ShopDailyTimeList l = await GetShopDailyTimeTable(shop.id, date);
             bool avaliable = false;
             for(int i = 0; i < l.timeList.Count; i++)
             {
