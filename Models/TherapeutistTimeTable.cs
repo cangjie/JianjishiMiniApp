@@ -19,6 +19,8 @@ namespace MiniApp.Models
         public  bool            avaliable           {get; set;} = true;
         [NotMapped]
         public  Therapeutist    therapeutist        {get; set;}
+        [NotMapped]
+        public  TimeTable?       shopTimeTable       { get; set; }
 
 
     }

@@ -294,6 +294,28 @@ namespace MiniApp.Controllers
             return Ok(await GetReserve(reserve.id));
         }
 
+        [HttpGet("{timeTableId}")]
+        public async Task<ActionResult<TimeTable>> GetTimeTableItem(int timeTableId)
+        {
+            TimeTable item = await _context.timeTable.FindAsync(timeTableId);
+            item.therapeutistTimeList = await _context.therapeutistTimeTable
+                .Where(t => t.shop_time_id == timeTableId).ToListAsync();
+            return Ok(item);
+        }
+
+        [HttpGet("{therapeutistTimeId}")]
+        public async Task<ActionResult<TherapeutistTimeTable>> GetTherapeutistTime(int therapeutistTimeId)
+        {
+            TherapeutistTimeTable item = await _context.therapeutistTimeTable.FindAsync(therapeutistTimeId);
+            if (item.shop_time_id > 0)
+            {
+                item.shopTimeTable = await _context.timeTable.FindAsync(item.shop_time_id);
+            }
+            return Ok(item);
+        }
+
     }
+
+    
 
 }
