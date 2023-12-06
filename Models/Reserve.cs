@@ -69,6 +69,10 @@ namespace MiniApp.Models
 								s = "已过时";
 							}
 						}
+						else if (reserve_date.Date <= DateTime.Now.Date)
+						{
+                            s = "已过时";
+                        }
 						else
 						{
 							s = "已预约";
