@@ -81,7 +81,8 @@ namespace MiniApp.Controllers
         public async Task<TimeTable> GetTimeTable(int id, DateTime date)
         {
             TimeTable t = await _context.timeTable.FindAsync(id);
-            var rList = await _context.reserve.Where(r => (r.time_table_id == id) )
+            var rList = await _context.reserve.Where(r => (r.time_table_id == id)
+                && r.reserve_date.Date == date.Date )
                 .AsNoTracking().ToListAsync();
             List<Reserve> avalReserveList = new List<Reserve>();
             for(int i = 0; i < rList.Count; i++)
