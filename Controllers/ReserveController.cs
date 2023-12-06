@@ -133,7 +133,7 @@ namespace MiniApp.Controllers
         public async Task<List<Reserve>> GetAvaliableReserveList(string openId)
         {
             var originList = await _context.reserve.Where(r => r.open_id.Trim().Equals(openId.Trim()))
-                .AsNoTracking().ToListAsync();
+                .OrderByDescending(r => r.id).AsNoTracking().ToListAsync();
             List<Reserve> l = new List<Reserve>();
             for (int i = 0; i < originList.Count; i++)
             {
@@ -151,8 +151,29 @@ namespace MiniApp.Controllers
         {
             sessionKey = Util.UrlDecode(sessionKey);
             MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
-            return Ok(await GetAvaliableReserveList(user.open_id));
+            List<Reserve> rList = await GetAvaliableReserveList(user.open_id);
+            for (int i = 0; i < rList.Count; i++)
+            {
+                rList[i].open_id = "";
+                if (rList[i].order != null)
+                {
+                    OrderOnline order = rList[i].order;
+                    order.open_id = "";
+                    for (int j = 0; order.payments != null && j < order.payments.Length; j++)
+                    {
+                        order.payments[j].open_id = "";
+                    }
+                }
+                
+            }
+            return Ok(rList);
+
+
+            //return Ok(await GetAvaliableReserveList(user.open_id));
         }
+
+
+
         
         [HttpGet("{shopId}")]
         public async Task<ActionResult<ShopDailyTimeList>> GetShopDailyTimeList(int shopId, DateTime date, string sessionKey)
