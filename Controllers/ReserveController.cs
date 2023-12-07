@@ -28,7 +28,29 @@ namespace MiniApp.Controllers
             _userHelper = new MiniUserController(context, config);
         }
 
-        
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Reserve>> Use(int id, string sessionKey)
+        {
+            sessionKey = Util.UrlDecode(sessionKey);
+            MiniUser? user = (MiniUser?)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
+            
+            if (user == null || user.staff == 0)
+            {
+                return BadRequest();
+            }
+            Reserve? r = await _context.reserve.FindAsync(id);
+            if (r == null)
+            {
+                return NotFound();
+            }
+            r.used = 1;
+            r.use_date = DateTime.Now;
+            r.use_oper_open_id = user.open_id;
+            _context.reserve.Entry(r).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return Ok(r);
+
+        }
 
         
         [NonAction]

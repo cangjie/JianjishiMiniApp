@@ -22,6 +22,12 @@ namespace MiniApp.Models
 		public string product_name {get; set;} = "";
 		public int order_id {get; set;}
 
+		public int used { get; set; } = 0;
+
+		public DateTime? use_date { get; set; }
+
+		public string use_oper_open_id { get; set; }
+
 		[NotMapped]
 		public DateTime? startTime
 		{
