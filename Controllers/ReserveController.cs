@@ -29,6 +29,8 @@ namespace MiniApp.Controllers
         }
 
         
+
+        
         [NonAction]
         public async Task<ShopDailyTimeList> GetShopDailyTimeTable(int shopId, DateTime date)
         {
@@ -144,6 +146,30 @@ namespace MiniApp.Controllers
                 }
             }
             return l;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<Reserve>>> GetReserveListByStaff(string shop, DateTime date, string sessionKey)
+        {
+            sessionKey = Util.UrlDecode(sessionKey);
+            shop = Util.UrlDecode(shop);
+            MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
+            if (user.staff == 0)
+            {
+                return BadRequest();
+            }
+            var rList = await _context.reserve.Where(r => r.shop_name.Trim().Equals(shop)
+                && r.reserve_date.Date == date.Date).AsNoTracking().ToListAsync();
+            List<Reserve> avaliableList = new List<Reserve>();
+            for (int i = 0; i < rList.Count; i++)
+            {
+                Reserve r = await GetReserve(rList[i].id);
+                if (r.valid)
+                {
+                    avaliableList.Add(r);
+                }
+            }
+            return Ok(avaliableList);
         }
 
         [HttpGet]
