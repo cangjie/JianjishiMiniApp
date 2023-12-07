@@ -39,6 +39,9 @@ namespace MiniApp.Models
 		}
 
 		[NotMapped]
+		public MiniUser? reserveUser { get; set; } = null;
+
+		[NotMapped]
 		public OrderOnline? order {get; set;} = null;
 		public string shop_name { get; set; } = "";
 		[NotMapped]

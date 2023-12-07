@@ -62,6 +62,13 @@ namespace MiniApp.Controllers
             {
                 return null;
             }
+            var ul = await _context.miniUser
+                .Where(u => u.open_id.Trim().Equals(r.open_id.Trim()))
+                .AsNoTracking().ToListAsync();
+            if (ul != null && ul.Count > 0)
+            {
+                r.reserveUser = ul[0];
+            }
             bool valid = r.cancel == 0? true : false;
             if (r.order_id != 0)
             {
@@ -73,6 +80,8 @@ namespace MiniApp.Controllers
                     r.cancel = 1;
                     r.cancel_memo = "超时未支付，自动取消。";
                     _context.Entry(r).State = EntityState.Modified;
+                    
+                    
                     await _context.SaveChangesAsync();
                 }
             }
