@@ -86,10 +86,16 @@ namespace MiniApp.Models
 						{
 							s = "已预约";
 						}
+						
 					}
 
 				}
-				return s.Trim();
+                if (used == 1)
+                {
+					s = "已核销";
+
+                }
+                return s.Trim();
 			}
 		}
 
