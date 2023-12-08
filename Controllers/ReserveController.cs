@@ -94,7 +94,7 @@ namespace MiniApp.Controllers
             bool valid = r.cancel == 0? true : false;
             if (r.order_id != 0)
             {
-                r.order = await _orderHelper.GetOrder(r.order_id);
+                r.order = await _orderHelper.GetWholeOrder(r.order_id);
                 if (r.cancel == 0 && r.order.pay_state != 1 
                     && r.order.create_date < DateTime.Now.AddMinutes(-30) )
                 {

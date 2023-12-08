@@ -95,6 +95,10 @@ namespace MiniApp.Models
 					s = "已核销";
 
                 }
+				if (order != null && order.refunds != null && order.refunds.Length > 0)
+				{
+					s = "已退款";
+				}
                 return s.Trim();
 			}
 		}

@@ -69,13 +69,15 @@ namespace MiniApp.Controllers
         }
 
         [NonAction]
-        public async Task<ActionResult<OrderOnline>> GetWholeOrder(int id)
+        public async Task<OrderOnline> GetWholeOrder(int id)
         {
             
             OrderOnline order = await _context.OrderOnline.FindAsync(id);
             
             order.payments = await _context.orderPayment.Where(p => p.order_id == id).ToArrayAsync();
-            return Ok(order);
+            order.refunds = await _context.orderPaymentRefund.Where(r => r.order_id == order.id)
+                .AsNoTracking().ToArrayAsync();
+            return order;
 
         }
 
@@ -419,7 +421,7 @@ namespace MiniApp.Controllers
             await _context.SaveChangesAsync();
             //var client = new WechatTenpayClient(options);
             // orderHelper = new OrderOnlinesController(_db, _originConfig);
-            OrderOnline order = (OrderOnline)((OkObjectResult)(await GetWholeOrder(payment.order_id)).Result).Value;
+            OrderOnline order = (OrderOnline)await GetWholeOrder(payment.order_id);
 
             WepayKey key = await _context.WepayKeys.FindAsync(payment.mch_id);
 
