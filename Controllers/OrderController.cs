@@ -380,7 +380,7 @@ namespace MiniApp.Controllers
         //[HttpGet("{paymentId}")]
         //public async Task<ActionResult<OrderPaymentRefund>> TenpayRefund(int paymentId, double amount, string sessionKey)
         [NonAction]
-        public async Task<OrderPaymentRefund> TenpayRefund(int paymentId, double amount, MiniUser user)
+        public async Task<OrderPaymentRefund> TenpayRefund(int paymentId, double amount, string memo, MiniUser user)
         {
 
             OrderPayment payment = await _context.orderPayment.FindAsync(paymentId);
@@ -411,7 +411,7 @@ namespace MiniApp.Controllers
                 amount = amount,
                 oper = user.open_id.Trim(),
                 state = 0,
-                memo = "",
+                memo = memo,
                 notify_url = notify.Trim()
 
 

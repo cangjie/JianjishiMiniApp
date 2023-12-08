@@ -420,9 +420,9 @@ namespace MiniApp.Controllers
         }
 
         [HttpGet("{reserveId}")]
-        public async Task<ActionResult<Reserve>> Refund(int reserveId, double amount, string sessionKey)
+        public async Task<ActionResult<Reserve>> Refund(int reserveId, double amount, string memo, string sessionKey)
         {
-
+            memo = Util.UrlDecode(memo);
             Reserve r = await GetReserve(reserveId);
             sessionKey = Util.UrlDecode(sessionKey);
             MiniUser? user = (MiniUser?)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
@@ -432,14 +432,13 @@ namespace MiniApp.Controllers
             }
             try
             {
-                await _orderHelper.TenpayRefund(r.order.payments[0].id, amount, user);
+                await _orderHelper.TenpayRefund(r.order.payments[0].id, amount, memo, user);
                 return Ok(await GetReserve(reserveId));
             }
             catch
             {
                 return BadRequest();
             }
-            return BadRequest();
         }
 
     }
