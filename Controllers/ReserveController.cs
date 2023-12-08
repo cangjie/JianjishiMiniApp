@@ -420,7 +420,7 @@ namespace MiniApp.Controllers
         }
 
         [HttpGet("{reserveId}")]
-        public async Task<ActionResult<Reserve>> Refund(int reserveId, double amount, string memo, string sessionKey)
+        public async Task<ActionResult<Reserve>> Refund(int reserveId, double amount,  string sessionKey, string memo = "")
         {
             memo = Util.UrlDecode(memo);
             Reserve r = await GetReserve(reserveId);
