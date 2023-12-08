@@ -179,6 +179,23 @@ namespace MiniApp.Controllers
             return l;
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Reserve>> GetReserve(int id, string sessionKey)
+        {
+            sessionKey = Util.UrlDecode(sessionKey);
+            MiniUser? user = (MiniUser?)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
+            if (user == null || user.staff == 0)
+            {
+                return BadRequest();
+            }
+            Reserve? r = await GetReserve(id);
+            if (r == null)
+            {
+                return NotFound();
+            }
+            return Ok(r);
+        }
+
         [HttpGet]
         public async Task<ActionResult<List<Reserve>>> GetReserveListByStaff(string shop, DateTime date, string sessionKey)
         {
