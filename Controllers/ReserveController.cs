@@ -419,6 +419,29 @@ namespace MiniApp.Controllers
             return Ok(item);
         }
 
+        [HttpGet("{reserveId}")]
+        public async Task<ActionResult<Reserve>> Refund(int reserveId, double amount, string sessionKey)
+        {
+
+            Reserve r = await GetReserve(reserveId);
+            sessionKey = Util.UrlDecode(sessionKey);
+            MiniUser? user = (MiniUser?)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
+            if (user == null || (user.staff == 0 && !r.status.Equals("已预约")))
+            {
+                return BadRequest();
+            }
+            try
+            {
+                await _orderHelper.TenpayRefund(r.order.payments[0].id, amount, user);
+                return Ok(await GetReserve(reserveId));
+            }
+            catch
+            {
+                return BadRequest();
+            }
+            return BadRequest();
+        }
+
     }
 
     

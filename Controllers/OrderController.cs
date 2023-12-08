@@ -68,18 +68,12 @@ namespace MiniApp.Controllers
             return order;
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<OrderOnline>> GetWholeOrder(int id, string sessionKey)
+        [NonAction]
+        public async Task<ActionResult<OrderOnline>> GetWholeOrder(int id)
         {
-            sessionKey = Util.UrlDecode(sessionKey.Trim());
-            MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
-
+            
             OrderOnline order = await _context.OrderOnline.FindAsync(id);
-            if (user.staff != 1 && !order.open_id.Trim().Equals(user.open_id.Trim()))
-            {
-                return BadRequest();
-            }
-
+            
             order.payments = await _context.orderPayment.Where(p => p.order_id == id).ToArrayAsync();
             return Ok(order);
 
@@ -112,7 +106,7 @@ namespace MiniApp.Controllers
             };
             await _context.orderPayment.AddAsync(payment);
             await _context.SaveChangesAsync();
-            return await GetWholeOrder(order.id, sessionKey);
+            return await GetWholeOrder(order.id);
         }
 
         [HttpGet("{orderId}")]
@@ -381,8 +375,10 @@ namespace MiniApp.Controllers
             await _context.SaveChangesAsync();
         }
 
-        [HttpGet("{paymentId}")]
-        public async Task<ActionResult<OrderPaymentRefund>> TenpayRefund(int paymentId, double amount, string sessionKey)
+        //[HttpGet("{paymentId}")]
+        //public async Task<ActionResult<OrderPaymentRefund>> TenpayRefund(int paymentId, double amount, string sessionKey)
+        [NonAction]
+        public async Task<OrderPaymentRefund> TenpayRefund(int paymentId, double amount, MiniUser user)
         {
 
             OrderPayment payment = await _context.orderPayment.FindAsync(paymentId);
@@ -395,12 +391,7 @@ namespace MiniApp.Controllers
 
             string notify = payment.notify.Trim().Replace("TenpayCallBack", "TenpayRefundCallback");
 
-            sessionKey = Util.UrlDecode(sessionKey.Trim());
-            MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
-            if (user == null)
-            {
-                return BadRequest();
-            }
+            
             double refundedAmount = await _context.orderPaymentRefund.Where(r => (r.payment_id == paymentId && r.state == 1)).SumAsync(s => s.amount);
 
 
@@ -428,7 +419,7 @@ namespace MiniApp.Controllers
             await _context.SaveChangesAsync();
             //var client = new WechatTenpayClient(options);
             // orderHelper = new OrderOnlinesController(_db, _originConfig);
-            OrderOnline order = (OrderOnline)((OkObjectResult)(await GetWholeOrder(payment.order_id, sessionKey)).Result).Value;
+            OrderOnline order = (OrderOnline)((OkObjectResult)(await GetWholeOrder(payment.order_id)).Result).Value;
 
             WepayKey key = await _context.WepayKeys.FindAsync(payment.mch_id);
 
@@ -469,14 +460,14 @@ namespace MiniApp.Controllers
                 _context.Entry<OrderPaymentRefund>(refund).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
                 //await Response.WriteAsync("SUCCESS");
-                return Ok(refund);
+                return refund;
             }
             catch
             {
                 refund.memo = response.ErrorMessage.Trim();
                 _context.Entry<OrderPaymentRefund>(refund).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-                return Ok(refund);
+                return refund;
             }
 
 
