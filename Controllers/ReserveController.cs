@@ -189,9 +189,17 @@ namespace MiniApp.Controllers
                 return BadRequest();
             }
             Reserve? r = await GetReserve(id);
+
             if (r == null)
             {
                 return NotFound();
+            }
+            var ul = await _context.miniUser
+                .Where(u => u.open_id.Trim().Equals(r.open_id.Trim()))
+                .AsNoTracking().ToListAsync();
+            if (ul != null && ul.Count > 0)
+            {
+                r.reserveUser = ul[0];
             }
             return Ok(r);
         }
