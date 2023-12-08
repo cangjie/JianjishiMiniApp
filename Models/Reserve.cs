@@ -26,7 +26,7 @@ namespace MiniApp.Models
 
 		public DateTime? use_date { get; set; }
 
-		public string use_oper_open_id { get; set; }
+		public string use_oper_open_id { get; set; } = "";
 
 		[NotMapped]
 		public DateTime? startTime
