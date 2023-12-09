@@ -292,6 +292,13 @@ namespace MiniApp.Controllers
 
             return Ok(tList);
         }
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Therapeutist>> GetTherapeutists(int id)
+        {
+            
+
+            return Ok(await _context.therapuetist.FindAsync(id));
+        }
 
         private bool ShopExists(int id)
         {
