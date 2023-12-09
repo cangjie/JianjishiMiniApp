@@ -11,6 +11,7 @@ namespace MiniApp.Models
         public  string  name        {get; set;}
         public  string  desc        {get; set;}
         public  string  image_url   {get; set;}
+        public  string  region      { get; set;}
         [NotMapped]
         public  bool    valid       {get; set;}
 
