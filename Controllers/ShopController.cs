@@ -287,7 +287,7 @@ namespace MiniApp.Controllers
             List<Therapeutist> tList = await _context.therapuetist.AsNoTracking().ToListAsync();
             for (int i = 0; i < tList.Count; i++)
             {
-                tList[i].desc = tList[i].desc.Replace(" ", "\r");
+                tList[i].desc = tList[i].desc.Replace(" ", "\r\n");
             }
 
             return Ok(tList);
