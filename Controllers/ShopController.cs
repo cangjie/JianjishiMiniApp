@@ -281,8 +281,18 @@ namespace MiniApp.Controllers
            
         }
 
-            
-       
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Therapeutist>>> GetTherapeutists()
+        {
+            List<Therapeutist> tList = await _context.therapuetist.AsNoTracking().ToListAsync();
+            for (int i = 0; i < tList.Count; i++)
+            {
+                tList[i].desc = tList[i].desc.Replace(" ", "\r");
+            }
+
+            return Ok(tList);
+        }
+
         private bool ShopExists(int id)
         {
             return (_context.Shop?.Any(e => e.id == id)).GetValueOrDefault();
