@@ -15,19 +15,31 @@ namespace MiniApp.Models
 		public int in_use { get; set; }
 		public DateTime start_date {get; set;}
 		public DateTime end_date {get; set;}
-		[NotMapped]
+
+		public DateTime? _startTime;// = DateTime.Parse(description.Split('-')[0].Trim());
+
+        [NotMapped]
 		public DateTime? startTime
 		{
 			get
 			{
 				try
 				{
-					return DateTime.Parse(description.Split('-')[0].Trim());
+					if (_startTime == null)
+					{
+                        _startTime = DateTime.Parse(description.Split('-')[0].Trim());
+					}
+
+                    return _startTime;
 				}
 				catch
 				{
 					return null;
 				}
+			}
+			set
+			{
+                _startTime = value;
 			}
 		}
 		[NotMapped]

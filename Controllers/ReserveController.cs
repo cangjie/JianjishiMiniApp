@@ -132,7 +132,7 @@ namespace MiniApp.Controllers
 
             t.reserveList = avalReserveList;
             t.avaliableCount = t.count - t.reserveList.Count;
-
+            t.startTime = (DateTime?)date.Date.AddHours(((DateTime)t.startTime).Hour).AddMinutes(((DateTime)t.startTime).Minute);
             var therapeutistTimeList = await _context.therapeutistTimeTable
                 .Where(tt => (tt.shop_time_id == id && tt.in_use == 1
                 && tt.start_date <= date.Date && tt.end_date >= date.Date))
