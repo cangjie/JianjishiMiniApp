@@ -426,7 +426,8 @@ namespace MiniApp.Controllers
             Reserve r = await GetReserve(reserveId);
             sessionKey = Util.UrlDecode(sessionKey);
             MiniUser? user = (MiniUser?)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
-            if (user == null || (user.staff == 0 && !r.status.Equals("已预约")))
+            if (user == null || (user.staff == 0 && !r.status.Equals("已预约")
+                && r.open_id.Trim().Equals(user.open_id.Trim())))
             {
                 return BadRequest();
             }
