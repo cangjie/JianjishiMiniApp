@@ -293,7 +293,7 @@ namespace MiniApp.Controllers
             return Ok(tList);
         }
         [HttpGet("{id}")]
-        public async Task<ActionResult<Therapeutist>> GetTherapeutists(int id)
+        public async Task<ActionResult<Therapeutist>> GetTherapeutist(int id)
         {
             
 
