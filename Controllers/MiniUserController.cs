@@ -192,6 +192,26 @@ namespace MiniApp.Controllers
             //return NotFound();
         }
 
+        [HttpGet]
+        public async Task<ActionResult<MiniUser>> ModUserInfo(string cell, string name, string gender, string sessionKey)
+        {
+            sessionKey = Util.UrlDecode(sessionKey);
+            MiniUser? user = (MiniUser?)((OkObjectResult)(await GetBySessionKey(sessionKey)).Result).Value;
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            
+            user.cell_number = cell;
+            user.gender = gender;
+            user.real_name = name;
+            _context.miniUser.Entry(user).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            user.open_id = "";
+            return Ok(user);
+
+        }
+
         // PUT: api/MiniUser/5
         [HttpPut("{sessionKey}")]
         public async Task<ActionResult<MiniUser>> PutMiniUser(MiniUser user, string sessionKey)
