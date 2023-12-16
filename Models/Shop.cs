@@ -14,6 +14,10 @@ namespace MiniApp.Models
 		public string address { get; set; } = "";
 		public int hidden { get; set; } = 0;
 		public string region {get; set;} = "";
+		public double lat_from { get; set; } = 0;
+		public double lat_to { get; set; } = 0;
+		public double long_from { get; set; } = 0;
+		public double long_to { get; set; } = 0;
 	}
 }
 
