@@ -483,6 +483,7 @@ namespace MiniApp.Controllers
 
 
         }
+        
 
         [HttpPost("{mchid}")]
         public async Task<ActionResult<string>> TenpayRefundCallback(int mchid,
@@ -604,7 +605,70 @@ namespace MiniApp.Controllers
             return "{ \r\n \"code\": \"SUCCESS\", \r\n \"message\": \"成功\" \r\n}";
         }
 
-        
+        [HttpGet]
+        public async Task<ActionResult<int>> TestProfitShare(string outTradeNo)
+        {
+            WepayKey key = await _context.WepayKeys.FindAsync(1);
+            string serial = "4F039BEC7B97A18FCC904EE339F37AFFE2B93BDD";
+            string path = $"{Environment.CurrentDirectory}";
+            if (path.StartsWith("/"))
+            {
+                path = path + "/WepayCertificate/";
+            }
+            else
+            {
+                path = path + "\\WepayCertificate\\";
+            }
+
+            string cerStr = "";
+            using (StreamReader sr = new StreamReader(path + serial.Trim() + ".pem", true))
+            {
+                cerStr = sr.ReadToEnd();
+                sr.Close();
+            }
+
+            var certManager = new InMemoryCertificateManager();
+            CertificateEntry ce = new CertificateEntry("RSA", serial, cerStr, DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
+
+
+            certManager.AddEntry(ce);
+
+            var options = new WechatTenpayClientOptions()
+            {
+                MerchantId = key.mch_id.Trim(),
+                MerchantV3Secret = "",
+                MerchantCertificateSerialNumber = key.key_serial.Trim(),
+                MerchantCertificatePrivateKey = key.private_key.Trim(),
+                PlatformCertificateManager = certManager,
+               
+            };
+            List<CreateProfitSharingOrderRequest.Types.Receiver> rl = new List<CreateProfitSharingOrderRequest.Types.Receiver>();
+            CreateProfitSharingOrderRequest.Types.Receiver r = new CreateProfitSharingOrderRequest.Types.Receiver()
+            {
+                Type = "PERSONAL_OPENID",
+                Account = "o5anv5cQovtIVp4Cz6T2Gp2KB4Po",
+                Name = "苍杰",
+                Amount = 1,
+                Description = "测试"
+            };
+
+
+            rl.Add(r);
+            var req = new CreateProfitSharingOrderRequest()
+            {
+                AppId = _appId,
+                TransactionId = "4200002117202401036153161435",
+                OutOrderNumber = "2401032334",
+                ReceiverList = rl,
+                WechatpayCertificateSerialNumber = serial
+            };
+
+            var client = new WechatTenpayClient(options);
+            var res = await client.ExecuteCreateProfitSharingOrderAsync(req);
+
+            
+            return Ok(0);
+        }
 
 
         private bool OrderOnlineExists(int id)
