@@ -10,6 +10,7 @@ using MiniApp.Models.Order;
 using SKIT.FlurlHttpClient.Wechat.TenpayV3;
 using SKIT.FlurlHttpClient.Wechat.TenpayV3.Models;
 using SKIT.FlurlHttpClient.Wechat.TenpayV3.Settings;
+//using SKIT.FlurlHttpClient.Wechat.TenpayV2;
 using MiniApp.Models;
 using System.Text;
 
@@ -130,6 +131,7 @@ namespace MiniApp.Controllers
             return await TenpayRequest(payment.id, sessionKey);
         }
 
+        
         [HttpGet("{paymentId}")]
         public async Task<ActionResult<TenpaySet>> TenpayRequest(int paymentId, string sessionKey)
         {
@@ -205,6 +207,7 @@ namespace MiniApp.Controllers
                 GoodsTag = "testing goods tag"
             };
 
+           
 
             var response = await client.ExecuteCreatePayTransactionJsapiAsync(request);
             var paraMap = client.GenerateParametersForJsapiPayRequest(request.AppId, response.PrepayId);
