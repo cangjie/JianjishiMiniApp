@@ -128,12 +128,12 @@ namespace MiniApp.Controllers
             };
             await _context.orderPayment.AddAsync(payment);
             await _context.SaveChangesAsync();
-            return await TenpayRequest(payment.id, sessionKey);
+            return await TenpayRequest(payment.id, sessionKey, true);
         }
 
         
         [HttpGet("{paymentId}")]
-        public async Task<ActionResult<TenpaySet>> TenpayRequest(int paymentId, string sessionKey)
+        public async Task<ActionResult<TenpaySet>> TenpayRequest(int paymentId, string sessionKey, bool profitShare)
         {
             sessionKey = Util.UrlDecode(sessionKey.Trim());
             MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
@@ -189,8 +189,10 @@ namespace MiniApp.Controllers
             }
 
             var client = new WechatTenpayClient(options);
+
             var request = new CreatePayTransactionJsapiRequest()
             {
+
                 OutTradeNumber = outTradeNo,
                 AppId = _appId,
                 Description = desc.Trim(),//wepayOrder.description.Trim().Equals("") ? "测试商品" : wepayOrder.description.Trim(),
@@ -204,7 +206,11 @@ namespace MiniApp.Controllers
                 {
                     OpenId = user.open_id.Trim()
                 },
-                GoodsTag = "testing goods tag"
+                GoodsTag = "testing goods tag",
+                Settlement = new CreatePayTransactionJsapiRequest.Types.Settlement()
+                {
+                    IsProfitSharing = profitShare
+                }
             };
 
            

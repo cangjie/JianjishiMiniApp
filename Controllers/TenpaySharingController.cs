@@ -4,8 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MiniApp.Models;
 using MiniApp.Models.Order;
 using SKIT.FlurlHttpClient.Wechat.TenpayV2;
-using SKIT.FlurlHttpClient.Wechat.TenpayV3.Settings;
-
+using SKIT.FlurlHttpClient.Wechat.TenpayV2.Models;
 using static MiniApp.Controllers.OrderController;
 
 namespace MiniApp.Controllers
@@ -57,20 +56,25 @@ namespace MiniApp.Controllers
             string timeStamp = Util.getTime13().ToString();
             int mchid = (int)payment.mch_id;
             WepayKey key = await _db.WepayKeys.FindAsync(mchid);
-
-            var certManager = new InMemoryCertificateManager();
-            /*
+        
+            //var certManager = new WechatTenpayClientOptions();
+            
             var options = new WechatTenpayClientOptions()
             {
                 MerchantId = key.mch_id.Trim(),
-                MerchantV3Secret = "",
-                MerchantCertificateSerialNumber = key.key_serial.Trim(),
-                MerchantCertificatePrivateKey = key.private_key.Trim(),
-                PlatformCertificateManager = certManager
+                MerchantSecret = ""
+                //MerchantCertificateSerialNumber = key.key_serial.Trim(),
+                //MerchantCertificatePrivateKey = key.private_key.Trim(),
+                //PlatformCertificateManager = certManager
             };
-            */
+            
             string desc = "未知商品";
 
+            
+            var req = new CreatePayUnifiedOrderRequest()
+            {
+                
+            };
 
 
             return BadRequest();
