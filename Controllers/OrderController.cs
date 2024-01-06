@@ -638,8 +638,8 @@ namespace MiniApp.Controllers
                 MerchantId = key.mch_id.Trim(),
                 MerchantV3Secret = "",
                 MerchantCertificateSerialNumber = key.key_serial.Trim(),
-                MerchantCertificatePrivateKey = key.private_key.Trim(),
-                PlatformCertificateManager = certManager,
+                MerchantCertificatePrivateKey = key.private_key.Trim()
+                //PlatformCertificateManager = certManager,
                
             };
             List<CreateProfitSharingOrderRequest.Types.Receiver> rl = new List<CreateProfitSharingOrderRequest.Types.Receiver>();
@@ -647,7 +647,6 @@ namespace MiniApp.Controllers
             {
                 Type = "PERSONAL_OPENID",
                 Account = "o5anv5cQovtIVp4Cz6T2Gp2KB4Po",
-                Name = "苍杰",
                 Amount = 1,
                 Description = "测试"
             };
@@ -657,13 +656,23 @@ namespace MiniApp.Controllers
             var req = new CreateProfitSharingOrderRequest()
             {
                 AppId = _appId,
-                TransactionId = "4200002117202401036153161435",
-                OutOrderNumber = "2401032334",
+                TransactionId = "4200002099202401057821533358",
+                OutOrderNumber = "2401052334",
                 ReceiverList = rl,
                 WechatpayCertificateSerialNumber = serial
             };
 
+            var addRecReq = new AddProfitSharingReceiverRequest()
+            {
+                AppId = _appId,
+                Type = "PERSONAL_OPENID",
+                Account = "o5anv5cQovtIVp4Cz6T2Gp2KB4Po",
+                RelationType = "USER"
+            };
+
             var client = new WechatTenpayClient(options);
+            var addres = await client.ExecuteAddProfitSharingReceiverAsync(addRecReq);
+            
             var res = await client.ExecuteCreateProfitSharingOrderAsync(req);
 
             
