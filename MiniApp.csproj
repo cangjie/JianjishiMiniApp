@@ -36,12 +36,14 @@
     <None Remove="Microsoft.EntityFrameworkCore.Sqlite" />
     <None Remove="Models\Order\" />
     <None Remove="WepayCertificate\" />
+    <None Remove="Models\Card\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\Order\" />
     <Folder Include="WepayCertificate\" />
     <Folder Include="wwwroot\images\" />
     <Folder Include="wwwroot\images\therapeutists\" />
+    <Folder Include="Models\Card\" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="wwwroot\images\" />

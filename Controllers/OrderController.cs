@@ -13,7 +13,7 @@ using SKIT.FlurlHttpClient.Wechat.TenpayV3.Settings;
 //using SKIT.FlurlHttpClient.Wechat.TenpayV2;
 using MiniApp.Models;
 using System.Text;
-
+using MiniApp.Models.Card;
 namespace MiniApp.Controllers
 {
     [Route("api/[controller]/[action]")]
@@ -24,6 +24,7 @@ namespace MiniApp.Controllers
         private readonly IConfiguration _config;
         private readonly MiniUserController _userHelper;
         private readonly string _appId = "";
+        private readonly CardController _cardHelper;
 
         public OrderController(SqlServerContext context, IConfiguration config)
         {
@@ -31,6 +32,7 @@ namespace MiniApp.Controllers
             _config = config;
             _userHelper = new MiniUserController(context, config);
             _appId = _config.GetSection("Settings").GetSection("AppId").Value.Trim();
+            _cardHelper = new CardController(context, config);
         }
 
 
@@ -383,9 +385,36 @@ namespace MiniApp.Controllers
             order.pay_state = 1;
             order.pay_time = DateTime.Now;
             _context.OrderOnline.Entry(order).State = EntityState.Modified;
+
             await _context.SaveChangesAsync();
+
+            if (order.product_id != null)
+            {
+                Card? card = await _cardHelper.CreateCard((int)order.product_id);
+                if (card != null)
+                {
+                    card.open_id = order.open_id;
+                    card.order_id = order.id;
+                    card.avaliable = 1;
+                    _context.Card.Entry(card).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+                }
+            }
         }
 
+        /*
+        [NonAction]
+        public async Task CreateCard(OrderOnline order)
+        {
+            Product p = await _context.product.FindAsync(order.product_id);
+            Card card = new Card()
+            {
+                id = 0,
+                open_id = order.open_id.Trim(),
+                order_id 
+            }
+        }
+        */
         //[HttpGet("{paymentId}")]
         //public async Task<ActionResult<OrderPaymentRefund>> TenpayRefund(int paymentId, double amount, string sessionKey)
         [NonAction]

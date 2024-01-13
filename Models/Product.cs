@@ -16,7 +16,9 @@ namespace MiniApp.Models
         public  double  sale_price          {get; set;}
         public  int     need_therapeutist   {get; set;}
         public  int     duration            {get; set;}
-
+        public int? times { get; set; }
+        public int? days { get; set; }
+        public double? amount { get; set; }
 
     }
 

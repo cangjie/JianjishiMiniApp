@@ -48,6 +48,7 @@ namespace MiniApp.Models.Order
         public string? staff_open_id { get; set; }
         public int have_score { get; set; } = 0;
         public DateTime create_date { get; set; } = DateTime.Now;
+        public int? product_id { get; set; }
         public DateTime? crt { get; set; } = DateTime.Now;
         
         [NotMapped]

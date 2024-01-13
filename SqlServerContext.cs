@@ -2,6 +2,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using MiniApp.Models;
 using MiniApp.Models.Order;
+using MiniApp.Models.Card;
 
 
 namespace MiniApp
@@ -30,6 +31,7 @@ namespace MiniApp
         public DbSet<Product> product {get; set;}
         public DbSet<Therapeutist> therapuetist {get; set;}
         public DbSet<TherapeutistTimeTable> therapeutistTimeTable {get; set;}
+        public DbSet<MiniApp.Models.Card.Card> Card { get; set; } = default!;
 
     }
 }
