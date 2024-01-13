@@ -28,6 +28,8 @@ namespace MiniApp.Models
 
 		public string use_oper_open_id { get; set; } = "";
 
+		public int card_id { get; set; } = 0;
+
 		[NotMapped]
 		public DateTime? startTime
 		{
@@ -68,6 +70,10 @@ namespace MiniApp.Models
 							s = "已退款";
 						}
 					}
+					if (card_id > 0)
+					{
+                        s = "已计次";
+                    }
 					if (s.Trim().Equals("已支付"))
 					{
 						if (reserve_date.Date == DateTime.Now.Date)

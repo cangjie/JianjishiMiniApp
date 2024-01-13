@@ -17,7 +17,7 @@ namespace MiniApp.Models.Card
         public double? total_amount {get; set;}
         public int? used_times { get; set; }
         public double? used_amount {get; set;}
-        public DateTime update_date {get; set;}
+        public DateTime update_date { get; set; } = DateTime.Now;
         public string title { get; set; } = "";
         public string desc { get; set; } = "";
 
