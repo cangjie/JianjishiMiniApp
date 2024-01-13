@@ -41,7 +41,8 @@ namespace MiniApp.Controllers
                 order_real_pay_price = p.sale_price,
                 final_price = p.sale_price,
                 staff_open_id = "",
-                type = ""
+                type = "",
+                product_id = p.id
             };
             await _context.OrderOnline.AddAsync(order);
             await _context.SaveChangesAsync();
