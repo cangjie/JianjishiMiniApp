@@ -20,6 +20,7 @@ namespace MiniApp.Controllers
             _context = context;
             _config = config;
             _userHelper = new MiniUserController(context, config);
+            _orderHelper = new OrderController(context, config);
         }
 
         [HttpGet("{productId}")]
@@ -54,7 +55,8 @@ namespace MiniApp.Controllers
             };
             await _context.orderPayment.AddAsync(payment);
             await _context.SaveChangesAsync();
-            return Ok(await _orderHelper.GetWholeOrder(order.id));
+            OrderOnline newOrder = (OrderOnline)await _orderHelper.GetWholeOrder(order.id);
+            return Ok(newOrder);
         }
 
         [HttpGet]
