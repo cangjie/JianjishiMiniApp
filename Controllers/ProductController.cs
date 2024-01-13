@@ -54,7 +54,7 @@ namespace MiniApp.Controllers
             };
             await _context.orderPayment.AddAsync(payment);
             await _context.SaveChangesAsync();
-            return await _orderHelper.GetWholeOrder(order.id);
+            return Ok(await _orderHelper.GetWholeOrder(order.id));
         }
 
         [HttpGet]
