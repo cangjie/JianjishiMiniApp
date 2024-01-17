@@ -33,6 +33,7 @@ namespace MiniApp
         public DbSet<TherapeutistTimeTable> therapeutistTimeTable {get; set;}
         public DbSet<MiniApp.Models.Card.Card> Card { get; set; }
         public DbSet<MiniApp.Models.Card.CardLog> cardLog { get; set; }
+        public DbSet<MiniApp.Models.Card.CardProductAssociate> cardAssociateProduct { get; set; }
     }
 }
 

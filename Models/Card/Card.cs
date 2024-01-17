@@ -27,6 +27,9 @@ namespace MiniApp.Models.Card
         public Product? product { get; set; }
         [NotMapped]
         public Models.Order.OrderOnline? order { get; set; }
+        [NotMapped]
+        public List<Product> associateProdct { get; set; } = new List<Product>();
+
 
         public string timeStatus
         {

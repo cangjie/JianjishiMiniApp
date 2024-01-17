@@ -193,7 +193,21 @@ namespace MiniApp.Controllers
                
                 Product? prod = await _db.product.FindAsync(order.product_id);
                 card.product = prod;
+                var assoProductIdList = await _db.cardAssociateProduct.Where(p => p.card_product_id == prod.id)
+                    .AsNoTracking().ToListAsync();
+                List<Product> pList = new List<Product>();
+                for (int i = 0; assoProductIdList != null && i < assoProductIdList.Count; i++)
+                {
+                    Product? p = await _db.product.FindAsync(assoProductIdList[i].common_product_id);
+                    if (p != null)
+                    {
+                        pList.Add(p);
+                    }
+                }
+                card.associateProdct = pList;
             }
+
+            
 
             return Ok(card);
         }
