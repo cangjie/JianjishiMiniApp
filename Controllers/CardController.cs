@@ -186,7 +186,7 @@ namespace MiniApp.Controllers
             }
             return Ok(card);
         }
-        /*
+        
         [HttpGet]
         public async Task<ActionResult<List<Card>>> GetAllCustomerCards(string sessionKey)
         {
@@ -300,13 +300,13 @@ namespace MiniApp.Controllers
 
             return NoContent();
         }
-        
+        */
         [NonAction]
         private bool CardExists(int id)
         {
             return (_db.Card?.Any(e => e.id == id)).GetValueOrDefault();
         }
 
-        */
+        
     }
 }
