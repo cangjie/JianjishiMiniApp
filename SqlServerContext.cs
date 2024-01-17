@@ -31,8 +31,8 @@ namespace MiniApp
         public DbSet<Product> product {get; set;}
         public DbSet<Therapeutist> therapuetist {get; set;}
         public DbSet<TherapeutistTimeTable> therapeutistTimeTable {get; set;}
-        public DbSet<MiniApp.Models.Card.Card> Card { get; set; } = default!;
-
+        public DbSet<MiniApp.Models.Card.Card> Card { get; set; }
+        public DbSet<MiniApp.Models.Card.CardLog> cardLog { get; set; }
     }
 }
 

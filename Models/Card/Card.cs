@@ -21,6 +21,36 @@ namespace MiniApp.Models.Card
         public string title { get; set; } = "";
         public string desc { get; set; } = "";
 
+        [NotMapped]
+        public List<CardLog> cardLogs { get; set; } = new List<CardLog>();
+
+
+        public string timeStatus
+        {
+            get
+            {
+                string s = "无时限";
+                if (start_date != null && ((DateTime)start_date).Date > DateTime.Now.Date)
+                {
+                    s = "未开始";
+                }
+                else
+                {
+                    s = "使用期内";
+                }
+                if (end_date != null && ((DateTime)end_date).Date < DateTime.Now.Date)
+                {
+                    s = "已过期";
+                }
+                else
+                {
+                    s = "使用期内";
+                }
+                return s;
+            }
+        }
+
+
     }
 }
 

@@ -62,6 +62,146 @@ namespace MiniApp.Controllers
             return card;
         }
 
+        [HttpGet("{cardId}")]
+        public async Task<ActionResult<Card>> Use(int cardId, double amount, int times, string sessionKey)
+        {
+            sessionKey = Util.UrlDecode(sessionKey);
+            MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
+
+            Card? card = await _db.Card.FindAsync(cardId);
+            if (card == null)
+            {
+                return NotFound();
+            }
+            string openId = "";
+            string staffOpenId = "";
+            if (user.staff != 1 && !user.open_id.Trim().Equals(card.open_id.Trim()))
+            {
+                return NoContent();
+            }
+
+            if (user.staff == 1)
+            {
+                staffOpenId = user.open_id.Trim();
+                openId = card.open_id;
+            }
+            else
+            {
+                staffOpenId = "";
+                openId = user.open_id.Trim();
+            }
+
+            bool valid = true;
+
+            if (card.start_date != null && ((DateTime)card.start_date).Date > DateTime.Now.Date)
+            {
+                valid = false;
+            }
+
+            if (card.end_date != null && ((DateTime)card.end_date) < DateTime.Now.Date)
+            {
+                valid = false;
+            }
+
+            if (card.total_times != null && (card.used_times + times) > card.total_times)
+            {
+                valid = false;
+            }
+            if (card.total_amount != null && (card.used_amount + amount) > card.total_amount)
+            {
+                valid = false;
+            }
+            if (!valid)
+            {
+                return BadRequest();
+            }
+
+
+            CardLog log = new CardLog()
+            {
+                id = 0,
+                card_id = card.id,
+                amount = amount,
+                times = times,
+                use_date = DateTime.Now,
+                open_id = openId.Trim(),
+                staff_open_id = staffOpenId.Trim()
+            };
+
+            if (amount > 0)
+            {
+                if (card.used_amount == null)
+                {
+                    card.used_amount = amount;
+                }
+                else
+                {
+                    card.used_amount += amount;
+                }
+            }
+
+            if (times > 0)
+            {
+                if (card.used_times == null)
+                {
+                    card.used_times = times;
+                }
+                else
+                {
+                    card.used_times += times;
+                }
+            }
+
+            await _db.cardLog.AddAsync(log);
+            _db.Card.Entry(card).State = EntityState.Modified;
+            await _db.SaveChangesAsync();
+            return Ok(card);
+        }
+
+        [HttpGet("{cardId}")]
+        public async Task<ActionResult<Card>> GetWholeCard(int cardId, string sessionKey)
+        {
+            sessionKey = Util.UrlDecode(sessionKey);
+
+            Card? card = await _db.Card.FindAsync(cardId);
+            if (card == null)
+            {
+                return NotFound();
+            }
+
+            MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
+
+            if (user.staff == 0 && !user.open_id.Trim().Equals(user.open_id.Trim()))
+            {
+                return BadRequest();
+            }
+
+            var log = await _db.cardLog.Where(log => log.card_id == card.id)
+                .OrderByDescending(log => log.id).AsNoTracking().ToListAsync();
+            for (int i = 0; log != null && log.Count > 0; i++)
+            {
+                card.cardLogs.Add(log[i]);
+            }
+            return Ok(card);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<Card>>> GetAllCustomerCards(string sessionKey)
+        {
+            sessionKey = Util.UrlDecode(sessionKey);
+            MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
+
+            var list = await _db.Card.Where(card => card.open_id.Trim().Equals(user.open_id.Trim()))
+                .OrderByDescending(card => card.id).AsNoTracking().ToListAsync();
+            List<Card> cardList = new List<Card>();
+            for (int i = 0; list != null && i < list.Count; i++)
+            {
+                Card card = (Card)((OkObjectResult)(await GetWholeCard(list[i].id, sessionKey)).Result).Value;
+                cardList.Add(card);
+            }
+            return Ok(cardList);
+        }
+
         /*
 
         // GET: api/Card
