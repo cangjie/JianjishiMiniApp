@@ -10,7 +10,7 @@ using MiniApp.Models.Card;
 using MiniApp.Models;
 namespace MiniApp.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class CardController : ControllerBase
     {
@@ -19,7 +19,7 @@ namespace MiniApp.Controllers
         private readonly MiniUserController _userHelper;
         private readonly string _appId = "";
 
-
+        
         public CardController(SqlServerContext context, IConfiguration config)
         {
             _db = context;
@@ -27,6 +27,8 @@ namespace MiniApp.Controllers
             _userHelper = new MiniUserController(context, config);
             _appId = _config.GetSection("Settings").GetSection("AppId").Value.Trim();
         }
+
+        
 
         [NonAction]
         public async Task<Card> CreateCard(int productId)
@@ -61,7 +63,7 @@ namespace MiniApp.Controllers
             await _db.SaveChangesAsync();
             return card;
         }
-
+        
         [HttpGet("{cardId}")]
         public async Task<ActionResult<Card>> Use(int cardId, double amount, int times, string sessionKey)
         {
@@ -157,7 +159,7 @@ namespace MiniApp.Controllers
             await _db.SaveChangesAsync();
             return Ok(card);
         }
-
+        
         [HttpGet("{cardId}")]
         public async Task<ActionResult<Card>> GetWholeCard(int cardId, string sessionKey)
         {
@@ -184,7 +186,7 @@ namespace MiniApp.Controllers
             }
             return Ok(card);
         }
-
+        /*
         [HttpGet]
         public async Task<ActionResult<List<Card>>> GetAllCustomerCards(string sessionKey)
         {
@@ -298,10 +300,13 @@ namespace MiniApp.Controllers
 
             return NoContent();
         }
-        */
+        
+        [NonAction]
         private bool CardExists(int id)
         {
             return (_db.Card?.Any(e => e.id == id)).GetValueOrDefault();
         }
+
+        */
     }
 }
