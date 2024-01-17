@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace MiniApp.Models.Card
 {
+	[Table("card_log")]
 	public class CardLog
 	{
 		public int id { get; set; }
