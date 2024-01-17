@@ -23,7 +23,10 @@ namespace MiniApp.Models.Card
 
         [NotMapped]
         public List<CardLog> cardLogs { get; set; } = new List<CardLog>();
-
+        [NotMapped]
+        public Product? product { get; set; }
+        [NotMapped]
+        public Models.Order.OrderOnline? order { get; set; }
 
         public string timeStatus
         {

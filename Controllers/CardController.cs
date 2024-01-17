@@ -184,6 +184,17 @@ namespace MiniApp.Controllers
             {
                 card.cardLogs.Add(log[i]);
             }
+
+            Models.Order.OrderOnline? order = await _db.OrderOnline.FindAsync(card.order_id);
+            card.order = order;
+
+            if (order != null)
+            {
+               
+                Product? prod = await _db.product.FindAsync(order.product_id);
+                card.product = prod;
+            }
+
             return Ok(card);
         }
         
