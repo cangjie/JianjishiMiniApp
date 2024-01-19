@@ -412,11 +412,24 @@ namespace MiniApp.Controllers
         public async Task<Reserve> PayOrderWithCard(int cardId, Reserve reserve)
         {
             Card? card = await _context.Card.FindAsync(cardId);
+            if (card.start_date != null && ((DateTime)card.start_date).Date > reserve.reserve_date.Date)
+            {
+                return null;
+            }
+            if (card.end_date != null && ((DateTime)card.end_date).Date < reserve.reserve_date.Date)
+            {
+                return null;
+            }
             if (card == null)
             {
                 return null;
             }
             if (!card.open_id.Trim().Equals(reserve.open_id.Trim()))
+            {
+                return null;
+            }
+            OrderOnline? order = await _context.OrderOnline.FindAsync(reserve.order_id);
+            if (order == null)
             {
                 return null;
             }
@@ -446,6 +459,7 @@ namespace MiniApp.Controllers
                 return null;
             }
             CardLog log = new CardLog();
+            log.id = 0;
             log.card_id = cardId;
             log.open_id = reserve.open_id;
 
@@ -455,16 +469,43 @@ namespace MiniApp.Controllers
                     if (card.total_amount - card.used_amount >= reserveProd.sale_price)
                     {
                         log.amount = reserveProd.sale_price;
+                        card.used_amount = card.used_amount + reserveProd.sale_price;
                     }
-                    card.used_amount = card.used_amount - reserveProd.sale_price;
+                    else
+                    {
+                        return null;
+                    }
+                    
                     break;
                 case "季卡":
+                    log.times = 1;
                     break;
                 case "次卡":
+                    log.times = 1;
+                    if (card.total_times - card.used_times >= 1)
+                    {
+                        card.used_times++;
+                        log.times = 1;
+                    }
+                    else
+                    {
+                        return null;
+                    }
                     break;
                 default:
                     break;
             }
+
+            await _context.cardLog.AddAsync(log);
+            _context.Card.Entry(card).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            if (log.id == 0)
+            {
+                return null;
+            }
+            order.card_log_id = log.id;
+            _context.OrderOnline.Entry(order).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
             return reserve;
         }
 
