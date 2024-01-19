@@ -50,7 +50,9 @@ namespace MiniApp.Models.Order
         public DateTime create_date { get; set; } = DateTime.Now;
         public int? product_id { get; set; }
         public DateTime? crt { get; set; } = DateTime.Now;
-        
+        public int? card_log_id { get; set; }
+
+
         [NotMapped]
         public OrderPayment[]? payments { get; set; }
         [NotMapped]

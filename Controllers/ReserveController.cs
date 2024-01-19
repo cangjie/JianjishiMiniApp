@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiniApp;
 using MiniApp.Models;
+using MiniApp.Models.Card;
 using MiniApp.Models.Order;
-
 namespace MiniApp.Controllers
 {
     [Route("api/[controller]/[action]")]
@@ -265,8 +265,13 @@ namespace MiniApp.Controllers
         }
 
         [HttpGet("{productId}")]
-        public async Task<ActionResult<Reserve>> Reserve(int productId, int timeId, int therapeutistTimeId, DateTime date, string sessionKey)
+        public async Task<ActionResult<Reserve>> Reserve(int productId, int timeId, int therapeutistTimeId, DateTime date, int  cardId, string sessionKey)
         {
+            string payMethod = "微信支付";
+
+
+
+
             sessionKey = Util.UrlDecode(sessionKey);
             MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
             date = date.Date;
@@ -359,13 +364,18 @@ namespace MiniApp.Controllers
             {
                 return BadRequest();
             }
+
+
+
+
+
             OrderOnline order = new OrderOnline()
             {
                 type = "门店预约",
                 open_id = user.open_id,
                 cell_number = user.cell_number.Trim(),
                 name = user.real_name.Trim(),
-                pay_method = "微信支付",
+                pay_method = payMethod.Trim(),
                 order_price = product.sale_price,
                 order_real_pay_price = product.sale_price,
                 pay_state = 0,
@@ -397,6 +407,67 @@ namespace MiniApp.Controllers
             await _context.SaveChangesAsync();
             return Ok(await GetReserve(reserve.id));
         }
+
+        [NonAction]
+        public async Task<Reserve> PayOrderWithCard(int cardId, Reserve reserve)
+        {
+            Card? card = await _context.Card.FindAsync(cardId);
+            if (card == null)
+            {
+                return null;
+            }
+            if (!card.open_id.Trim().Equals(reserve.open_id.Trim()))
+            {
+                return null;
+            }
+            bool productMatchCard = false;
+            var pList = await _context.cardAssociateProduct.Where(p => p.card_product_id == card.product_id)
+                .AsNoTracking().ToListAsync();
+            for (int i = 0; i < pList.Count; i++)
+            {
+                if (pList[i].common_product_id == reserve.product_id)
+                {
+                    productMatchCard = true;
+                    break;
+                }
+            }
+            if (!productMatchCard)
+            {
+                return null;
+            }
+            Product? cardProd = await _context.product.FindAsync(card.product_id);
+            if (cardProd == null)
+            {
+                return null;
+            }
+            Product? reserveProd = await _context.product.FindAsync(reserve.product_id);
+            if (reserveProd == null)
+            {
+                return null;
+            }
+            CardLog log = new CardLog();
+            log.card_id = cardId;
+            log.open_id = reserve.open_id;
+
+            switch (cardProd.type.Trim())
+            {
+                case "储值卡":
+                    if (card.total_amount - card.used_amount >= reserveProd.sale_price)
+                    {
+                        log.amount = reserveProd.sale_price;
+                    }
+                    card.used_amount = card.used_amount - reserveProd.sale_price;
+                    break;
+                case "季卡":
+                    break;
+                case "次卡":
+                    break;
+                default:
+                    break;
+            }
+            return reserve;
+        }
+
 
         [HttpGet("{timeTableId}")]
         public async Task<ActionResult<TimeTable>> GetTimeTableItem(int timeTableId)
