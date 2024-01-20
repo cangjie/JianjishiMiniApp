@@ -20,12 +20,15 @@ namespace MiniApp.Controllers
 
         private readonly OrderController _orderHelper;
         private readonly MiniUserController _userHelper;
+        private readonly CardController _cardHelper;
+
         public ReserveController(SqlServerContext context, IConfiguration config)
         {
             _context = context;
             _config = config;
             _orderHelper = new OrderController(context, config);
             _userHelper = new MiniUserController(context, config);
+            _cardHelper = new CardController(context, config);
         }
 
         [HttpGet("{id}")]
@@ -268,8 +271,16 @@ namespace MiniApp.Controllers
         public async Task<ActionResult<Reserve>> Reserve(int productId, int timeId, int therapeutistTimeId, DateTime date, int  cardId, string sessionKey)
         {
             string payMethod = "微信支付";
-
-
+            Card? card;
+            if (cardId > 0)
+            {
+                card = (Card)((OkObjectResult)(await _cardHelper.GetWholeCard(cardId, sessionKey)).Result).Value;
+                if (card == null)
+                {
+                    return BadRequest();
+                }
+                payMethod = card.product.type.Trim();
+            }
 
 
             sessionKey = Util.UrlDecode(sessionKey);
@@ -405,6 +416,52 @@ namespace MiniApp.Controllers
             };
             await _context.reserve.AddAsync(reserve);
             await _context.SaveChangesAsync();
+
+
+            if (cardId > 0)
+            {
+                int cardLogId = 0;
+                CardLog? log;
+                try
+                {
+                    switch (payMethod)
+                    {
+                        case "季卡":
+                        case "次卡":
+                            log = (CardLog)((OkObjectResult)(await _cardHelper.Use(cardId, 0, 1, sessionKey)).Result).Value;
+                            cardLogId = log.id;
+                            break;
+                        
+                        case "储值卡":
+                            log = (CardLog)((OkObjectResult)(await _cardHelper.Use(cardId, order.final_price, 0, sessionKey)).Result).Value;
+                            cardLogId = log.id;
+                            break;
+                        default:
+                            return BadRequest();
+                            break;
+                    }
+                }
+                catch
+                {
+                    return BadRequest();
+                }
+                if (cardLogId == 0)
+                {
+                    return BadRequest();
+                }
+                else
+                {
+                    order.card_log_id = cardLogId;
+                    order.pay_state = 1;
+                    order.pay_time = DateTime.Now;
+                    _context.OrderOnline.Entry(order).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+                }
+
+            }
+
+
+
             return Ok(await GetReserve(reserve.id));
         }
 
@@ -458,6 +515,9 @@ namespace MiniApp.Controllers
             {
                 return null;
             }
+
+
+            /*
             CardLog log = new CardLog();
             log.id = 0;
             log.card_id = cardId;
@@ -499,6 +559,7 @@ namespace MiniApp.Controllers
             await _context.cardLog.AddAsync(log);
             _context.Card.Entry(card).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+            
             if (log.id == 0)
             {
                 return null;
@@ -506,6 +567,7 @@ namespace MiniApp.Controllers
             order.card_log_id = log.id;
             _context.OrderOnline.Entry(order).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+            */
             return reserve;
         }
 

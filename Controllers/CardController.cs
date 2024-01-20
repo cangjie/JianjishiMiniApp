@@ -65,7 +65,7 @@ namespace MiniApp.Controllers
         }
         
         [HttpGet("{cardId}")]
-        public async Task<ActionResult<Card>> Use(int cardId, double amount, int times, string sessionKey)
+        public async Task<ActionResult<CardLog>> Use(int cardId, double amount, int times, string sessionKey)
         {
             sessionKey = Util.UrlDecode(sessionKey);
             MiniUser user = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
@@ -153,11 +153,18 @@ namespace MiniApp.Controllers
                     card.used_times += times;
                 }
             }
-
-            await _db.cardLog.AddAsync(log);
-            _db.Card.Entry(card).State = EntityState.Modified;
-            await _db.SaveChangesAsync();
-            return Ok(card);
+            try
+            {
+                await _db.cardLog.AddAsync(log);
+                _db.Card.Entry(card).State = EntityState.Modified;
+                await _db.SaveChangesAsync();
+                return Ok(log);
+            }
+            catch
+            {
+                return BadRequest();
+            }
+            
         }
         
         [HttpGet("{cardId}")]
