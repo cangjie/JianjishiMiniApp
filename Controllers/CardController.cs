@@ -187,7 +187,7 @@ namespace MiniApp.Controllers
 
             var log = await _db.cardLog.Where(log => log.card_id == card.id)
                 .OrderByDescending(log => log.id).AsNoTracking().ToListAsync();
-            for (int i = 0; log != null && log.Count > 0; i++)
+            for (int i = 0; log != null && i < log.Count; i++)
             {
                 card.cardLogs.Add(log[i]);
             }
