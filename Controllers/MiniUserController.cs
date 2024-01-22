@@ -112,7 +112,7 @@ namespace MiniApp.Controllers
             }
 
 
-            MiniUser user = (await GetBySessionKey(sessionKey)).Value;
+            MiniUser? user = (MiniUser?)((OkObjectResult)(await GetBySessionKey(sessionKey)).Result).Value;
             if (user == null)
             {
                 user = new MiniUser();
