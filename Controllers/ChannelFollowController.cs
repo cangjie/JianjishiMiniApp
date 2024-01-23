@@ -31,9 +31,35 @@ namespace MiniApp.Controllers
 
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<KeyValuePair<DateTime, int>>>> GetFollowList(int userId, string sessionKey)
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<List<KeyValuePair<DateTime, int>>>> GetSingleUserFollowList(int userId, string sessionKey)
         {
+            sessionKey = Util.UrlDecode(sessionKey.Trim());
+
+            MiniUser sessionKeyUser = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
+
+            Models.User? user = await _db.user.FindAsync(userId);
+
+            if (sessionKeyUser.staff != 1 && !sessionKeyUser.union_id.Trim().Equals(user.oa_union_id.Trim()))
+            {
+                return BadRequest();
+            }
+            DataTable dt = await GetFollowList(userId);
+            List<KeyValuePair<DateTime, int>> list = new List<KeyValuePair<DateTime, int>>();
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                KeyValuePair<DateTime, int> item
+                    = new KeyValuePair<DateTime, int>((DateTime)dt.Rows[i][0], (int)dt.Rows[i][1]);
+                list.Add(item);
+            }
+            return Ok(list);
+        }
+
+
+        [NonAction]
+        public async Task<DataTable> GetFollowList(int userId)
+        {
+            /*
             sessionKey = Util.UrlDecode(sessionKey.Trim());
         
             MiniUser sessionKeyUser = (MiniUser)((OkObjectResult)(await _userHelper.GetBySessionKey(sessionKey)).Result).Value;
@@ -44,15 +70,14 @@ namespace MiniApp.Controllers
             {
                 return BadRequest();
             }
-
-            var followList = await _db.ChannelFollow.Where(f => (f.scene.Trim().Equals("follow") && f.channel_user_id == userId))
-                .AsNoTracking().ToListAsync();
+            */
+            var followList = await _db.ChannelFollow
+                .Where(f => (f.scene.Trim().Equals("follow") && f.channel_user_id == userId))
+                .OrderByDescending(l => l.create_date).AsNoTracking().ToListAsync();
 
             DataTable dt = new DataTable();
             dt.Columns.Add("date", typeof(System.DateTime));
             dt.Columns.Add("count", typeof(System.Int32));
-
-          
 
             for (int i = 0; i < followList.Count; i++)
             {
@@ -74,7 +99,7 @@ namespace MiniApp.Controllers
                     dt.Rows.Add(dr);
                 }
             }
-
+            /*
             List<KeyValuePair<DateTime, int>> list = new List<KeyValuePair<DateTime, int>>();
             for (int i = 0; i < dt.Rows.Count; i++)
             {
@@ -82,7 +107,8 @@ namespace MiniApp.Controllers
                     = new KeyValuePair<DateTime, int>((DateTime)dt.Rows[i][0], (int)dt.Rows[i][1]);
                 list.Add(item);
             }
-            return Ok(list);
+            */
+            return dt;
         }
 
         /*

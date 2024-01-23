@@ -66,14 +66,23 @@ namespace MiniApp.Controllers
             }
 
             List<MiniUser> userList = await  _context.miniUser.Where(u => u.open_id == openId && u.original_id == _originalId).ToListAsync<MiniUser>();
-
+            
             if (userList.Count == 0)
             {
                 return NotFound();
             }
             else
             {
-                return Ok(userList[0]);
+                MiniUser miniUser = userList[0];
+
+                var uList = await _context.user
+                    .Where(u => u.oa_union_id.Trim().Equals(miniUser.union_id.Trim()))
+                    .AsNoTracking().ToListAsync();
+                if (uList != null && uList.Count > 0)
+                {
+                    miniUser.user_id = uList[0].id;
+                }
+                return Ok(miniUser);
             }
             
         }

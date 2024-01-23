@@ -32,5 +32,8 @@ namespace MiniApp.Models
         public string? language { get; set; }
         public string real_name { get; set; } = "";
         public int staff { get; set; } = 0;
+
+        [NotMapped]
+        public int user_id { get; set; } = 0;
     }
 }
