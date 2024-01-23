@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MiniApp.Models;
 using MiniApp.Models.Order;
 using MiniApp.Models.Card;
+using OA.Models;
 
 
 namespace MiniApp
@@ -34,6 +35,8 @@ namespace MiniApp
         public DbSet<MiniApp.Models.Card.Card> Card { get; set; }
         public DbSet<MiniApp.Models.Card.CardLog> cardLog { get; set; }
         public DbSet<MiniApp.Models.Card.CardProductAssociate> cardAssociateProduct { get; set; }
+        public DbSet<OA.Models.ChannelFollow> ChannelFollow { get; set; } = default!;
+        public DbSet<User> user { get; set; }
     }
 }
 
